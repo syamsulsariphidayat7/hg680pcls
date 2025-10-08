@@ -37,7 +37,9 @@ Jika belum muncul logout dulu atau:
 /etc/init.d/uhttpd restart
 ```
 ## 🚀 Ping target sesuaikan bisa IP atau Host (support multi)
-contoh : 8.8.8.8 1.1.1.1 ava.game.naver.com
+
+Contoh : 8.8.8.8 1.1.1.1 ava.game.naver.com
+
 ---
 
 ## ⚖️ Lisensi
