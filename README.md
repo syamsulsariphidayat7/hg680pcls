@@ -11,73 +11,32 @@ Custom LuCI Script & Service untuk STB HG680P berbasis OpenWrt.
 `HG680PCLS` adalah skrip tambahan yang:
 - Menambahkan halaman baru di **LuCI → Services → HG680PCLS**
 - Memungkinkan pengelolaan layanan / konfigurasi custom untuk STB HG680P
+- Pastikan STB kamu sudah menjalankan **OpenWrt**, dan sudah ada `curl` di dalamnya.
 
 ---
 
-## 🚀 Instalasi Otomatis
-
-> 📢 Pastikan STB kamu sudah menjalankan **OpenWrt**, dan sudah ada `git` serta `bash` di dalamnya.
-
-### 💻 1️⃣ Instal langsung (via `curl`)
+### 💻 1️⃣ Install
 ```bash
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/syamsulsariphidayat7/hg680pcls/main/install.sh)"
 ```
 
 ---
 
-### 🧰 2️⃣ Instal manual (via `git clone`)
-```bash
-git clone https://github.com/syamsulsariphidayat7/hg680pcls.git
-cd hg680pcls
-chmod +x install.sh
-./install.sh
-```
-
----
-
 ## 🧹 Uninstall
 ```bash
-cd /root/hg680pcls
-chmod +x uninstall.sh
-./uninstall.sh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/syamsulsariphidayat7/hg680pcls/main/uninstall.sh)"
 ```
-
----
-
-## 📂 Struktur Folder
-```
-hg680pcls/
-├── install.sh
-├── uninstall.sh
-├── etc/
-│   ├── config/
-│   │   └── hg680pcls
-│   └── init.d/
-│       └── hg680pcls
-├── usr/
-│   ├── bin/
-│   │   └── hg680pcl
-│   └── lib/
-│       └── lua/
-│           └── luci/
-│               ├── controller/
-│               │   └── hg680pcls.lua
-│               └── model/
-│                   └── cbi/
-│                       └── hg680pcls.lua
-```
-
 ---
 
 ## 🧩 Menu LuCI
 Setelah instalasi, buka:
 > **LuCI → Services → HG680PCLS**
 
-Jika belum muncul:
+Jika belum muncul logout dulu atau:
 ```bash
 /etc/init.d/uhttpd restart
 ```
-
+## 🚀 Ping target sesuaikan bisa IP atau Host
 ---
 
 ## ⚖️ Lisensi
