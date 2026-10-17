@@ -1,0 +1,325 @@
+<%+header%>
+<style>
+.hg-wrap{--hg-bg:var(--hg-bg);--hg-card:var(--hg-card);--hg-border:var(--hg-border);--hg-text:var(--hg-text);--hg-muted:var(--hg-muted);--hg-bar:var(--hg-bar);--hg-green:var(--hg-green);--hg-red:var(--hg-red);--hg-amber:var(--hg-amber);max-width:1080px;margin:0 auto;padding:20px 16px 110px;background:var(--hg-bg);border-radius:16px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--hg-text)}.hg-wrap.hg-light{--hg-bg:#eef2f6;--hg-card:#ffffff;--hg-border:#d3dae2;--hg-text:#1b2330;--hg-muted:#5c6a7a;--hg-bar:rgba(255,255,255,.94)}
+.hg-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.hg-title{margin:0;font-size:26px;letter-spacing:1px}
+.hg-title .hg-accent{color:var(--hg-green)}
+.hg-sub{margin:4px 0 0;color:var(--hg-muted);font-size:13px}
+.hg-topright{display:flex;align-items:center;gap:10px}
+.hg-theme{background:var(--hg-card);border:1px solid var(--hg-border);border-radius:999px;width:40px;height:40px;cursor:pointer;font-size:17px;color:var(--hg-text);flex:none}
+.hg-theme:hover{border-color:var(--hg-green)}
+.hg-pill{display:flex;align-items:center;gap:8px;background:var(--hg-card);border:1px solid var(--hg-border);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600}
+.hg-dot{width:10px;height:10px;border-radius:50%;background:#6e7681}
+.hg-pill.on .hg-dot{background:var(--hg-green);box-shadow:0 0 10px var(--hg-green);animation:hg-pulse 1.6s infinite}
+.hg-pill.off .hg-dot{background:var(--hg-red);box-shadow:0 0 10px var(--hg-red)}
+.hg-pill.on{color:var(--hg-green);border-color:#1d3a28}
+.hg-pill.off{color:var(--hg-red);border-color:#3d1d1d}
+@keyframes hg-pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.hg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.hg-card{background:var(--hg-card);border:1px solid var(--hg-border);border-radius:14px;padding:18px}
+.hg-card h2{margin:0 0 14px;font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:var(--hg-muted)}
+.hg-bigstate{font-size:34px;font-weight:800;letter-spacing:1px;margin-bottom:4px}
+.hg-bigstate.on{color:var(--hg-green);text-shadow:0 0 24px rgba(34,197,94,.35)}
+.hg-bigstate.off{color:var(--hg-red);text-shadow:0 0 24px rgba(239,68,68,.35)}
+.hg-bigsub{color:var(--hg-muted);font-size:12px;margin-bottom:12px}
+.hg-targets{display:flex;flex-direction:column;gap:8px}
+.hg-target{display:flex;align-items:center;gap:10px;background:var(--hg-bg);border:1px solid var(--hg-border);border-radius:10px;padding:9px 12px;font-size:13px}
+.hg-target .hg-tdot{width:9px;height:9px;border-radius:50%;flex:none}
+.hg-target.ok .hg-tdot{background:var(--hg-green);box-shadow:0 0 8px var(--hg-green)}
+.hg-target.bad .hg-tdot{background:var(--hg-red);box-shadow:0 0 8px var(--hg-red)}
+.hg-target .hg-host{flex:1;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hg-target .hg-ms{color:var(--hg-muted);font-size:12px;font-family:ui-monospace,Menlo,monospace}
+.hg-svc{margin-top:12px;font-size:12px;color:var(--hg-muted)}
+.hg-svc b{color:var(--hg-text)}
+.hg-modes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.hg-mode{display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--hg-bg);border:1px solid var(--hg-border);border-radius:12px;padding:14px 6px;cursor:pointer;color:var(--hg-text);font-size:12px;transition:border-color .15s,transform .15s}
+.hg-mode:hover{transform:translateY(-2px)}
+.hg-mode.active{border-color:var(--hg-green);box-shadow:0 0 0 1px var(--hg-green),0 0 18px rgba(34,197,94,.15)}
+.hg-led{width:16px;height:16px;border-radius:50%;background:#333}
+.hg-led.m-off{animation:hg-red 1s infinite}
+.hg-led.m-on{background:var(--hg-green);box-shadow:0 0 12px var(--hg-green)}
+.hg-led.m-heart{animation:hg-heart 1.2s infinite}
+.hg-led.m-disko{animation:hg-disko .45s infinite}
+@keyframes hg-red{0%,100%{background:#3a1111;box-shadow:none}50%{background:var(--hg-red);box-shadow:0 0 12px var(--hg-red)}}
+@keyframes hg-heart{0%,100%{background:#3a1111;box-shadow:none}30%{background:var(--hg-amber);box-shadow:0 0 10px var(--hg-amber)}60%{background:var(--hg-green);box-shadow:0 0 12px var(--hg-green)}}
+@keyframes hg-disko{0%{background:var(--hg-red);box-shadow:0 0 10px var(--hg-red)}33%{background:var(--hg-amber);box-shadow:0 0 10px var(--hg-amber)}66%{background:var(--hg-green);box-shadow:0 0 10px var(--hg-green)}100%{background:#3b82f6;box-shadow:0 0 10px #3b82f6}}
+.hg-hint{margin:12px 0 0;font-size:12px;color:var(--hg-muted);line-height:1.5}
+.hg-input{width:100%;box-sizing:border-box;background:var(--hg-bg);border:1px solid var(--hg-border);border-radius:10px;color:var(--hg-text);padding:11px 13px;font-size:13px;font-family:ui-monospace,Menlo,monospace}
+.hg-input:focus{outline:none;border-color:var(--hg-green)}
+.hg-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.hg-chip{background:var(--hg-bg);border:1px solid var(--hg-border);border-radius:999px;padding:6px 13px;font-size:12px;color:var(--hg-muted);cursor:pointer;font-family:ui-monospace,Menlo,monospace}
+.hg-chip:hover{color:var(--hg-text);border-color:#3b82f6}
+.hg-chip.in{color:var(--hg-green);border-color:var(--hg-green)}
+.hg-range{width:100%;accent-color:var(--hg-green)}
+.hg-rangeval{font-size:26px;font-weight:700;color:var(--hg-green)}
+.hg-rangeval small{font-size:13px;color:var(--hg-muted);font-weight:400}
+.hg-foot{font-size:12px;color:var(--hg-muted);text-align:center;line-height:1.7}
+.hg-foot a{color:#3b82f6}
+.hg-savebar{position:fixed;left:0;right:0;bottom:0;background:var(--hg-bar);backdrop-filter:blur(8px);border-top:1px solid var(--hg-border);padding:14px 20px;display:flex;justify-content:flex-end;align-items:center;gap:14px;z-index:50}
+.hg-dirty{font-size:12px;color:var(--hg-amber)}
+.hg-savebtn{background:var(--hg-green);border:none;border-radius:10px;color:#04120a;font-weight:700;font-size:14px;padding:12px 26px;cursor:pointer}
+.hg-savebtn:hover{background:#16a34a}
+.hg-savebtn:disabled{opacity:.5;cursor:wait}
+.hg-toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--hg-card);border:1px solid var(--hg-border);border-radius:10px;padding:12px 22px;font-size:13px;opacity:0;transition:all .25s;pointer-events:none;z-index:60;max-width:90vw;text-align:center}
+.hg-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.hg-toast.ok{border-color:var(--hg-green);color:var(--hg-green)}
+.hg-toast.err{border-color:var(--hg-red);color:var(--hg-red)}
+@media(max-width:640px){.hg-modes{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+<div class="hg-wrap">
+  <div class="hg-top">
+    <div>
+      <h1 class="hg-title">HG680P<span class="hg-accent">CLS</span></h1>
+      <p class="hg-sub">LED Control &amp; Ping Monitor &middot; STB HG680P</p>
+    </div>
+    <div class="hg-topright">
+      <button class="hg-theme" id="themeBtn" type="button" title="Gelap / Terang">&#127769;</button>
+      <div class="hg-pill" id="statusPill">
+        <span class="hg-dot" id="statusDot"></span><span id="statusText">Memuat&hellip;</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="hg-grid">
+    <section class="hg-card">
+      <h2>Status Koneksi</h2>
+      <div class="hg-bigstate" id="bigState">&mdash;</div>
+      <div class="hg-bigsub" id="bigSub">mengecek target ping&hellip;</div>
+      <div class="hg-targets" id="targetList"></div>
+      <div class="hg-svc">Service: <b id="svcState">&mdash;</b></div>
+    </section>
+
+    <section class="hg-card">
+      <h2>LED Power</h2>
+      <div class="hg-modes" id="powerModes">
+        <button type="button" class="hg-mode" data-group="power" data-mode="off"><span class="hg-led m-off"></span>Off</button>
+        <button type="button" class="hg-mode" data-group="power" data-mode="on"><span class="hg-led m-on"></span>On</button>
+        <button type="button" class="hg-mode" data-group="power" data-mode="heart"><span class="hg-led m-heart"></span>Heart</button>
+        <button type="button" class="hg-mode" data-group="power" data-mode="disko"><span class="hg-led m-disko"></span>Disko</button>
+      </div>
+      <p class="hg-hint">Pola kedip LED power. <b>Off</b> = merah berkedip, <b>On</b> = hijau nyala, <b>Heart</b> = detak kuning-hijau, <b>Disko</b> = cepat warna-warni.</p>
+    </section>
+
+    <section class="hg-card">
+      <h2>LED LAN</h2>
+      <div class="hg-modes" id="lanModes">
+        <button type="button" class="hg-mode" data-group="lan" data-mode="off"><span class="hg-led m-off"></span>Off</button>
+        <button type="button" class="hg-mode" data-group="lan" data-mode="on"><span class="hg-led m-on"></span>On</button>
+        <button type="button" class="hg-mode" data-group="lan" data-mode="heart"><span class="hg-led m-heart"></span>Heart</button>
+        <button type="button" class="hg-mode" data-group="lan" data-mode="disko"><span class="hg-led m-disko"></span>Disko</button>
+      </div>
+      <p class="hg-hint">Pola kedip LED LAN, aktif saat koneksi terdeteksi online.</p>
+    </section>
+
+    <section class="hg-card">
+      <h2>Ping Target</h2>
+      <input class="hg-input" id="pingTargets" type="text" spellcheck="false"
+        placeholder="8.8.8.8 1.1.1.1 ava.game.naver.com">
+      <div class="hg-chips" id="presetChips">
+        <button type="button" class="hg-chip" data-host="8.8.8.8">8.8.8.8</button>
+        <button type="button" class="hg-chip" data-host="1.1.1.1">1.1.1.1</button>
+        <button type="button" class="hg-chip" data-host="ava.game.naver.com">ava.game.naver.com</button>
+      </div>
+      <p class="hg-hint">Pisahkan dengan spasi. Klik preset untuk tambah/hapus cepat. Online jika salah satu bisa di-ping.</p>
+    </section>
+
+    <section class="hg-card">
+      <h2>Interval Cek</h2>
+      <div class="hg-rangeval"><span id="intervalVal">5</span> <small>detik</small></div>
+      <input class="hg-range" id="interval" type="range" min="1" max="60" step="1" value="5">
+      <p class="hg-hint">Jeda antar pengecekan ping. Makin kecil makin responsif, makin besar makin hemat resource.</p>
+    </section>
+
+    <section class="hg-card hg-foot">
+      <b>Syamsul Sarip Hidayat</b> &middot; Boundless<br>
+      <a href="https://github.com/syamsulsariphidayat7/hg680pcls" target="_blank" rel="noopener">hg680pcls</a>
+    </section>
+  </div>
+
+  <div class="hg-savebar">
+    <span class="hg-dirty" id="dirtyNote"></span>
+    <button class="hg-savebtn" id="saveBtn" type="button">Simpan &amp; Restart Service</button>
+  </div>
+  <div class="hg-toast" id="toast"></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var STATUS_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "status")%>";
+var SAVE_URL   = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "save")%>";
+var CSRF_TOKEN = "<%=luci.csrf.get_csrf_token()%>";
+
+var state = { power: "heart", lan: "disko", targets: "", interval: 5 };
+var firstLoad = true;
+var dirty = false;
+
+function $(id){ return document.getElementById(id); }
+
+function apiStatus(){
+  if (window.HG_MOCK) {
+    return new Promise(function(res){ setTimeout(function(){ res(window.HG_MOCK.status); }, 250); });
+  }
+  return fetch(STATUS_URL, { credentials: "same-origin" }).then(function(r){ return r.json(); });
+}
+
+function apiSave(){
+  if (window.HG_MOCK) {
+    return new Promise(function(res){ setTimeout(function(){ res({ ok: true }); }, 600); });
+  }
+  var body = "token=" + encodeURIComponent(CSRF_TOKEN)
+    + "&power_mode=" + encodeURIComponent(state.power)
+    + "&lan_mode=" + encodeURIComponent(state.lan)
+    + "&interval=" + encodeURIComponent(state.interval)
+    + "&ping_targets=" + encodeURIComponent(state.targets);
+  return fetch(SAVE_URL, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body
+  }).then(function(r){ return r.json(); });
+}
+
+function toast(msg, cls){
+  var t = $("toast");
+  t.textContent = msg;
+  t.className = "hg-toast show " + (cls || "");
+  clearTimeout(t._h);
+  t._h = setTimeout(function(){ t.className = "hg-toast"; }, 2600);
+}
+
+function markDirty(){
+  if (!dirty) { dirty = true; $("dirtyNote").textContent = "Ada perubahan belum disimpan"; }
+}
+
+function setActiveMode(group, mode){
+  var btns = document.querySelectorAll('.hg-mode[data-group="' + group + '"]');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].classList.toggle("active", btns[i].getAttribute("data-mode") === mode);
+  }
+}
+
+function renderStatus(d){
+  var pill = $("statusPill"), big = $("bigState");
+  pill.classList.remove("on", "off");
+  if (d.online) {
+    pill.classList.add("on"); $("statusText").textContent = "ONLINE";
+    big.textContent = "ONLINE"; big.className = "hg-bigstate on";
+    $("bigSub").textContent = "Setidaknya satu target bisa di-ping.";
+  } else {
+    pill.classList.add("off"); $("statusText").textContent = "OFFLINE";
+    big.textContent = "OFFLINE"; big.className = "hg-bigstate off";
+    $("bigSub").textContent = "Semua target tidak merespons.";
+  }
+  $("svcState").textContent = d.service === "running" ? "berjalan" : "berhenti";
+
+  var list = $("targetList"); list.innerHTML = "";
+  (d.targets || []).forEach(function(t){
+    var row = document.createElement("div");
+    row.className = "hg-target " + (t.ok ? "ok" : "bad");
+    var dot = document.createElement("span"); dot.className = "hg-tdot";
+    var host = document.createElement("span"); host.className = "hg-host"; host.textContent = t.host;
+    var ms = document.createElement("span"); ms.className = "hg-ms";
+    ms.textContent = t.ok ? (t.ms != null ? t.ms.toFixed(1) + " ms" : "ok") : "timeout";
+    row.appendChild(dot); row.appendChild(host); row.appendChild(ms);
+    list.appendChild(row);
+  });
+}
+
+function fillForm(cfg){
+  state.power = cfg.power_mode; state.lan = cfg.lan_mode;
+  state.targets = cfg.ping_targets; state.interval = cfg.interval;
+  setActiveMode("power", state.power);
+  setActiveMode("lan", state.lan);
+  $("pingTargets").value = state.targets;
+  $("interval").value = state.interval;
+  $("intervalVal").textContent = state.interval;
+  syncChips();
+}
+
+function syncChips(){
+  var cur = (" " + $("pingTargets").value.trim() + " ").replace(/\s+/g, " ");
+  var chips = document.querySelectorAll("#presetChips .hg-chip");
+  for (var i = 0; i < chips.length; i++) {
+    var h = chips[i].getAttribute("data-host");
+    chips[i].classList.toggle("in", cur.indexOf(" " + h + " ") !== -1);
+  }
+}
+
+function refresh(){
+  apiStatus().then(function(d){
+    renderStatus(d);
+    if (firstLoad) { firstLoad = false; fillForm(d.config); }
+  }).catch(function(){
+    $("statusText").textContent = "Gagal memuat";
+  });
+}
+
+document.querySelectorAll(".hg-mode").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    var group = btn.getAttribute("data-group");
+    var mode = btn.getAttribute("data-mode");
+    state[group] = mode;
+    setActiveMode(group, mode);
+    markDirty();
+  });
+});
+
+$("pingTargets").addEventListener("input", function(){
+  state.targets = $("pingTargets").value;
+  syncChips(); markDirty();
+});
+
+document.querySelectorAll("#presetChips .hg-chip").forEach(function(chip){
+  chip.addEventListener("click", function(){
+    var h = chip.getAttribute("data-host");
+    var parts = $("pingTargets").value.trim().split(/\s+/).filter(Boolean);
+    var i = parts.indexOf(h);
+    if (i === -1) { parts.push(h); } else { parts.splice(i, 1); }
+    $("pingTargets").value = parts.join(" ");
+    state.targets = $("pingTargets").value;
+    syncChips(); markDirty();
+  });
+});
+
+$("interval").addEventListener("input", function(){
+  state.interval = parseInt($("interval").value, 10);
+  $("intervalVal").textContent = state.interval;
+  markDirty();
+});
+
+$("saveBtn").addEventListener("click", function(){
+  var btn = $("saveBtn");
+  btn.disabled = true; btn.textContent = "Menyimpan...";
+  apiSave().then(function(r){
+    if (r && r.ok) {
+      dirty = false; $("dirtyNote").textContent = "";
+      toast("Tersimpan. Service di-restart.", "ok");
+      setTimeout(refresh, 1200);
+    } else {
+      toast("Gagal: " + ((r && r.error) || "unknown"), "err");
+    }
+  }).catch(function(){
+    toast("Gagal menghubungi STB.", "err");
+  }).finally(function(){
+    btn.disabled = false; btn.textContent = "Simpan & Restart Service";
+  });
+});
+
+var themeBtn = $("themeBtn"), wrapEl = document.querySelector(".hg-wrap");
+function setTheme(light){
+  wrapEl.classList.toggle("hg-light", light);
+  themeBtn.innerHTML = light ? "&#9728;&#65039;" : "&#127769;";
+  try { localStorage.setItem("hg680pcls-theme", light ? "light" : "dark"); } catch(e){}
+}
+var savedTheme = null;
+try { savedTheme = localStorage.getItem("hg680pcls-theme"); } catch(e){}
+setTheme(savedTheme === "light");
+themeBtn.addEventListener("click", function(){ setTheme(!wrapEl.classList.contains("hg-light")); });
+
+refresh();
+setInterval(function(){ if (!document.hidden) refresh(); }, 5000);
+})();
+</script>
+<%+footer%>

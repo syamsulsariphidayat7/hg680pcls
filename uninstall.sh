@@ -14,6 +14,9 @@ rm -f /etc/config/hg680pcls
 rm -f /etc/init.d/hg680pcls
 rm -f /usr/bin/hg680pcl
 rm -f /usr/lib/lua/luci/controller/hg680pcls.lua
+rm -f /usr/lib/lua/luci/view/hg680pcls/dashboard.htm
+rmdir -p /usr/lib/lua/luci/view/hg680pcls 2>/dev/null
+# Sisa UI lama (CBI) dari versi sebelumnya
 rm -f /usr/lib/lua/luci/model/cbi/hg680pcls.lua
 
 echo "[HG680PCLS] ✅ Uninstallation complete!"

@@ -15,7 +15,7 @@ etc/config/hg680pcls
 etc/init.d/hg680pcls
 usr/bin/hg680pcl
 usr/lib/lua/luci/controller/hg680pcls.lua
-usr/lib/lua/luci/model/cbi/hg680pcls.lua
+usr/lib/lua/luci/view/hg680pcls/dashboard.htm
 "
 
 # Download semua file dari repo GitHub
@@ -25,18 +25,22 @@ for f in $FILES; do
     curl -fsSL "$REPO/$f" -o "$f" || { echo "✖ Gagal download $f"; exit 1; }
 done
 
+# Bersihkan file UI lama (CBI) kalau upgrade dari versi sebelumnya
+rm -f /usr/lib/lua/luci/model/cbi/hg680pcls.lua
+
 # Copy ke sistem
 echo "[HG680PCLS] Installing files..."
 cp -f etc/config/hg680pcls /etc/config/
 cp -f etc/init.d/hg680pcls /etc/init.d/
 cp -f usr/bin/hg680pcl /usr/bin/
 cp -f usr/lib/lua/luci/controller/hg680pcls.lua /usr/lib/lua/luci/controller/
-cp -f usr/lib/lua/luci/model/cbi/hg680pcls.lua /usr/lib/lua/luci/model/cbi/
+cp -f usr/lib/lua/luci/view/hg680pcls/dashboard.htm /usr/lib/lua/luci/view/hg680pcls/
 
 # Set permission
 chmod 755 /etc/init.d/hg680pcls /usr/bin/hg680pcl
 chmod 644 /etc/config/hg680pcls
-chmod 644 /usr/lib/lua/luci/controller/hg680pcls.lua /usr/lib/lua/luci/model/cbi/hg680pcls.lua
+chmod 644 /usr/lib/lua/luci/controller/hg680pcls.lua
+chmod 644 /usr/lib/lua/luci/view/hg680pcls/dashboard.htm
 
 # Enable dan mulai service
 /etc/init.d/hg680pcls enable 2>/dev/null
