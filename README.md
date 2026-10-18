@@ -31,12 +31,12 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/syamsulsariphidayat7/hg680
 Setelah instalasi, buka:
 > **LuCI → Services → HG680PCLS**
 
-Dashboard modern berisi:
-- 🟢 **Status koneksi** — ONLINE/OFFLINE + latensi per target (auto-refresh tiap 5 detik)
+Dashboard berisi:
+- 🟢 **Status koneksi** — cukup di **pill pojok kanan atas** (ONLINE/OFFLINE, auto-refresh tiap 5 detik)
 - 💡 **Mode LED** (Power & LAN) — kartu visual dengan preview animasi pola kedip (Offline / Online / Heart / Disko)
 - 🎯 **Ping target** — input multi target; tiap host tampil sebagai chip dengan **status inline** (dot + latensi, live). Klik chip untuk hapus.
 - ⏱️ **Interval cek** — slider 1–60 detik
-- 🔄 **Update dari GitHub** — cek versi terpasang vs terbaru, tombol update langsung dari dashboard (setelan dipertahankan)
+- 🔄 **Update** — tombol **Cek Update**; kalau ada versi baru, tombol **Install Update** muncul (setelan dipertahankan)
 - 💾 **Simpan & Restart Service** — tombol bergaya LuCI, langsung apply ke `/etc/config/hg680pcls` dan restart service
 
 Jika belum muncul LOGOUT dulu atau:

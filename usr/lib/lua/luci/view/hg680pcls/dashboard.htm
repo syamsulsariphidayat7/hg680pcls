@@ -1,6 +1,6 @@
 <%+header%>
 <style>
-.hg-wrap{--hg-bg:#eef2f6;--hg-card:#ffffff;--hg-border:#d3dae2;--hg-text:#1b2330;--hg-muted:#5c6a7a;--hg-bar:rgba(255,255,255,.94);--hg-green:#22c55e;--hg-red:#ef4444;--hg-amber:#f59e0b;max-width:1080px;margin:0 auto;padding:20px 16px 110px;background:linear-gradient(180deg,#f7fafc,#eef2f6);border-radius:16px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--hg-text)}
+.hg-wrap{--hg-bg:#eef2f6;--hg-card:#ffffff;--hg-border:#d3dae2;--hg-text:#1b2330;--hg-muted:#5c6a7a;--hg-bar:rgba(255,255,255,.94);--hg-green:#22c55e;--hg-red:#ef4444;--hg-amber:#f59e0b;max-width:100%;padding:16px 14px 110px;background:linear-gradient(180deg,#f7fafc,#eef2f6);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--hg-text)}
 .hg-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .hg-title{margin:0;font-size:26px;letter-spacing:1px}
 .hg-title .hg-accent{color:var(--hg-green)}
@@ -17,10 +17,6 @@
 .hg-card{background:var(--hg-card);border:1px solid var(--hg-border);border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(16,24,40,.04),0 8px 24px rgba(16,24,40,.05);transition:box-shadow .2s ease,transform .2s ease}
 .hg-card:hover{box-shadow:0 2px 6px rgba(16,24,40,.06),0 14px 34px rgba(16,24,40,.08);transform:translateY(-1px)}
 .hg-card h2{margin:0 0 14px;font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:var(--hg-muted)}
-.hg-bigstate{font-size:34px;font-weight:800;letter-spacing:1px;margin-bottom:4px}
-.hg-bigstate.on{color:var(--hg-green);text-shadow:0 0 24px rgba(34,197,94,.35)}
-.hg-bigstate.off{color:var(--hg-red);text-shadow:0 0 24px rgba(239,68,68,.35)}
-.hg-bigsub{color:var(--hg-muted);font-size:12px;margin-bottom:12px}
 .hg-tchip{display:inline-flex;align-items:center;gap:7px;background:var(--hg-bg);border:1px solid var(--hg-border);border-radius:999px;padding:6px 12px;font-size:12px;color:var(--hg-text);cursor:pointer;font-family:ui-monospace,Menlo,monospace;transition:border-color .15s,transform .15s}
 .hg-tchip:hover{border-color:var(--hg-red);transform:translateY(-1px)}
 .hg-cdot{width:9px;height:9px;border-radius:50%;flex:none;background:#9aa4b2}
@@ -47,16 +43,13 @@
 .hg-input{width:100%;box-sizing:border-box;background:var(--hg-bg);border:1px solid var(--hg-border);border-radius:10px;color:var(--hg-text);padding:11px 13px;font-size:13px;font-family:ui-monospace,Menlo,monospace}
 .hg-input:focus{outline:none;border-color:var(--hg-green)}
 .hg-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.hg-chip{background:var(--hg-bg);border:1px solid var(--hg-border);border-radius:999px;padding:6px 13px;font-size:12px;color:var(--hg-muted);cursor:pointer;font-family:ui-monospace,Menlo,monospace}
-.hg-chip:hover{color:var(--hg-text);border-color:#3b82f6}
-.hg-chip.in{color:var(--hg-green);border-color:var(--hg-green)}
 .hg-range{width:100%;accent-color:var(--hg-green)}
 .hg-rangeval{font-size:26px;font-weight:700;color:var(--hg-green)}
 .hg-rangeval small{font-size:13px;color:var(--hg-muted);font-weight:400}
 .hg-foot{font-size:12px;color:var(--hg-muted);text-align:center;line-height:1.7}
 .hg-foot a{color:#3b82f6}
 .hg-savebar{position:fixed;left:0;right:0;bottom:0;background:var(--hg-bar);backdrop-filter:blur(8px);border-top:1px solid var(--hg-border);padding:14px 0;z-index:50}
-.hg-savebar-inner{max-width:1080px;margin:0 auto;padding:0 16px;box-sizing:border-box;display:flex;justify-content:flex-end;align-items:center;gap:14px}
+.hg-savebar-inner{max-width:100%;margin:0 auto;padding:0 16px;box-sizing:border-box;display:flex;justify-content:flex-end;align-items:center;gap:14px}
 .hg-dirty{font-size:12px;color:var(--hg-amber)}
 .hg-savebar .cbi-button{min-width:220px;font-weight:600;font-size:14px}
 .hg-toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--hg-card);border:1px solid var(--hg-border);border-radius:10px;padding:12px 22px;font-size:13px;opacity:0;transition:all .25s;pointer-events:none;z-index:60;max-width:90vw;text-align:center}
@@ -65,7 +58,8 @@
 .hg-toast.err{border-color:var(--hg-red);color:var(--hg-red)}
 .hg-updrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .hg-upd-note{font-size:12px;color:var(--hg-muted)}
-.hg-upd-btn{margin-left:auto}
+.hg-upd-btns{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.hg-hide{display:none!important}
 .hg-pill.hg-ver{cursor:default}
 .hg-pill.hg-ver.up{border-color:var(--hg-amber)}
 .hg-pill.hg-ver.up .hg-dot{background:var(--hg-amber);box-shadow:0 0 10px var(--hg-amber);animation:none}
@@ -87,13 +81,6 @@
   </div>
 
   <div class="hg-grid">
-    <section class="hg-card">
-      <h2>Status Koneksi</h2>
-      <div class="hg-bigstate" id="bigState">&mdash;</div>
-      <div class="hg-bigsub" id="bigSub">mengecek target ping&hellip;</div>
-      <div class="hg-svc">Service: <b id="svcState">&mdash;</b></div>
-    </section>
-
     <section class="hg-card">
       <h2>LED Power</h2>
       <div class="hg-modes" id="powerModes">
@@ -122,12 +109,6 @@
         placeholder="graph.instagram.com">
       <div class="hg-chips-title">Target aktif (klik untuk hapus)</div>
       <div class="hg-chips" id="targetChips"></div>
-      <div class="hg-chips-title">Tambah cepat</div>
-      <div class="hg-chips" id="presetChips">
-        <button type="button" class="hg-chip" data-host="graph.instagram.com">+ graph.instagram.com</button>
-        <button type="button" class="hg-chip" data-host="8.8.8.8">+ 8.8.8.8</button>
-        <button type="button" class="hg-chip" data-host="1.1.1.1">+ 1.1.1.1</button>
-      </div>
       <p class="hg-hint">Tulis target, pisahkan dengan spasi. Tiap host tampil dengan status inline (dot + latensi), live.</p>
     </section>
 
@@ -145,16 +126,20 @@
           <span class="hg-dot" id="verDot"></span>
           <span>Terpasang: v<b id="verLocal">&mdash;</b></span>
         </div>
-        <span class="hg-upd-note" id="verNote">memeriksa versi&hellip;</span>
-        <button class="cbi-button cbi-button-action hg-upd-btn" id="updateBtn" type="button">Update dari GitHub</button>
+        <span class="hg-upd-note" id="verNote">belum dicek</span>
+        <div class="hg-upd-btns">
+          <button class="cbi-button cbi-button-action" id="checkBtn" type="button">Cek Update</button>
+          <button class="cbi-button cbi-button-apply hg-hide" id="updateBtn" type="button">Install Update</button>
+        </div>
       </div>
-      <pre class="hg-log" id="updateLog" hidden></pre>
-      <p class="hg-hint">Ambil versi terbaru dari GitHub. Setelan &amp; target ping kamu tetap dipertahankan; service otomatis restart.</p>
+      <pre class="hg-log hg-hide" id="updateLog"></pre>
+      <p class="hg-hint">Klik <b>Cek Update</b> untuk bandingkan versi terpasang dengan GitHub. Kalau ada versi baru, tombol <b>Install Update</b> muncul. Setelan &amp; target ping tetap dipertahankan.</p>
     </section>
 
     <section class="hg-card hg-foot">
       <b>Syamsul Sarip Hidayat</b> &middot; Boundless<br>
       <a href="https://github.com/syamsulsariphidayat7/hg680pcls" target="_blank" rel="noopener">hg680pcls</a>
+      <div class="hg-svc">Service: <b id="svcState">&mdash;</b></div>
     </section>
   </div>
 
@@ -259,7 +244,7 @@ function statusOf(host){
 function removeTarget(host){
   $("pingTargets").value = parseTargets().filter(function(x){ return x !== host; }).join(" ");
   state.targets = $("pingTargets").value;
-  syncChips(); renderTargetChips(); markDirty();
+  renderTargetChips(); markDirty();
 }
 
 function renderTargetChips(){
@@ -282,17 +267,16 @@ function renderTargetChips(){
 
 function renderStatus(d){
   lastStatus = d;
-  var pill = $("statusPill"), big = $("bigState");
+  var pill = $("statusPill");
   pill.classList.remove("on", "off");
   if (d.online) {
-    pill.classList.add("on"); $("statusText").textContent = "ONLINE";
-    big.textContent = "ONLINE"; big.className = "hg-bigstate on";
-    $("bigSub").textContent = "Setidaknya satu target bisa di-ping.";
+    pill.classList.add("on");
+    $("statusText").textContent = "ONLINE";
   } else {
-    pill.classList.add("off"); $("statusText").textContent = "OFFLINE";
-    big.textContent = "OFFLINE"; big.className = "hg-bigstate off";
-    $("bigSub").textContent = "Semua target tidak merespons.";
+    pill.classList.add("off");
+    $("statusText").textContent = "OFFLINE";
   }
+  if (d.version) $("verLocal").textContent = d.version;
   $("svcState").textContent = d.service === "running" ? "berjalan" : "berhenti";
   renderTargetChips();
 }
@@ -306,17 +290,7 @@ function fillForm(cfg){
   $("pingTargets").value = state.targets;
   $("interval").value = state.interval;
   $("intervalVal").textContent = state.interval;
-  syncChips();
   renderTargetChips();
-}
-
-function syncChips(){
-  var cur = (" " + $("pingTargets").value.trim() + " ").replace(/\s+/g, " ");
-  var chips = document.querySelectorAll("#presetChips .hg-chip");
-  for (var i = 0; i < chips.length; i++) {
-    var h = chips[i].getAttribute("data-host");
-    chips[i].classList.toggle("in", cur.indexOf(" " + h + " ") !== -1);
-  }
 }
 
 function refresh(){
@@ -340,19 +314,7 @@ document.querySelectorAll(".hg-mode").forEach(function(btn){
 
 $("pingTargets").addEventListener("input", function(){
   state.targets = $("pingTargets").value;
-  syncChips(); renderTargetChips(); markDirty();
-});
-
-document.querySelectorAll("#presetChips .hg-chip").forEach(function(chip){
-  chip.addEventListener("click", function(){
-    var h = chip.getAttribute("data-host");
-    var parts = $("pingTargets").value.trim().split(/\s+/).filter(Boolean);
-    var i = parts.indexOf(h);
-    if (i === -1) { parts.push(h); } else { parts.splice(i, 1); }
-    $("pingTargets").value = parts.join(" ");
-    state.targets = $("pingTargets").value;
-    syncChips(); renderTargetChips(); markDirty();
-  });
+  renderTargetChips(); markDirty();
 });
 
 $("interval").addEventListener("input", function(){
@@ -379,31 +341,46 @@ $("saveBtn").addEventListener("click", function(){
   });
 });
 
-function renderVersion(d){
-  if (!d) return;
-  $("verLocal").textContent = d.local || "?";
-  var pill = $("verPill");
-  if (d.update) {
-    pill.classList.add("up");
-    $("verNote").textContent = "Update tersedia: v" + d.remote;
-  } else if (d.remote) {
-    pill.classList.remove("up");
-    $("verNote").textContent = "Terbaru (v" + d.remote + ")";
-  } else {
-    pill.classList.remove("up");
-    $("verNote").textContent = "Tidak bisa cek versi terbaru";
-  }
+var checking = false;
+
+function doCheck(){
+  if (checking) return;
+  checking = true;
+  var btn = $("checkBtn");
+  btn.disabled = true; btn.textContent = "Memeriksa...";
+  $("verNote").textContent = "memeriksa versi...";
+  $("verPill").classList.remove("up");
+  apiCheck().then(function(d){
+    if (!d) return;
+    if (d.local) $("verLocal").textContent = d.local;
+    if (d.update) {
+      $("verPill").classList.add("up");
+      $("verNote").textContent = "Versi baru tersedia: v" + d.remote;
+      $("updateBtn").classList.remove("hg-hide");
+    } else if (d.remote) {
+      $("verNote").textContent = "Sudah terbaru (v" + d.remote + ")";
+      $("updateBtn").classList.add("hg-hide");
+    } else {
+      $("verNote").textContent = "Tidak bisa cek versi (periksa internet)";
+      $("updateBtn").classList.add("hg-hide");
+    }
+  }).catch(function(){
+    $("verNote").textContent = "Gagal cek update";
+  }).finally(function(){
+    checking = false;
+    btn.disabled = false; btn.textContent = "Cek Update";
+  });
 }
 
-function checkUpdate(){ apiCheck().then(renderVersion).catch(function(){}); }
+$("checkBtn").addEventListener("click", doCheck);
 
 $("updateBtn").addEventListener("click", function(){
   var btn = $("updateBtn");
-  if (!confirm("Update ke versi terbaru dari GitHub?\nSetelan & target ping tetap dipertahankan, service akan restart.")) return;
+  if (!confirm("Install versi terbaru dari GitHub?\nSetelan & target ping tetap dipertahankan, service akan restart.")) return;
   var log = $("updateLog");
-  log.hidden = false;
+  log.classList.remove("hg-hide");
   log.textContent = "Mengunduh & memasang dari GitHub...\n";
-  btn.disabled = true; btn.textContent = "Mengupdate...";
+  btn.disabled = true; btn.textContent = "Menginstall...";
   apiUpdate().then(function(r){
     log.textContent += (r && (r.log || r.error)) || "";
     if (r && r.ok) {
@@ -411,16 +388,15 @@ $("updateBtn").addEventListener("click", function(){
       setTimeout(function(){ location.reload(); }, 2500);
     } else {
       toast("Update gagal. Lihat log di bawah.", "err");
-      btn.disabled = false; btn.textContent = "Update dari GitHub";
+      btn.disabled = false; btn.textContent = "Install Update";
     }
   }).catch(function(){
     log.textContent += "Gagal menghubungi STB.";
     toast("Update gagal.", "err");
-    btn.disabled = false; btn.textContent = "Update dari GitHub";
+    btn.disabled = false; btn.textContent = "Install Update";
   });
 });
 
-checkUpdate();
 refresh();
 setInterval(function(){ if (!document.hidden) refresh(); }, 5000);
 })();

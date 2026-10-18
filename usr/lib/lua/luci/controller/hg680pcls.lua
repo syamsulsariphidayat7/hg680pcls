@@ -21,6 +21,44 @@ local MODES = { offline = true, online = true, heart = true, disko = true }
 local REPO_RAW = "https://raw.githubusercontent.com/syamsulsariphidayat7/hg680pcls/main"
 local VERSION_FILE = "/usr/lib/lua/luci/view/hg680pcls/VERSION"
 
+local function read_file(path)
+    local f = io.open(path, "r")
+    if not f then return nil end
+    local data = f:read("*a")
+    f:close()
+    return data
+end
+
+local function read_tail(path, max)
+    local f = io.open(path, "rb")
+    if not f then return "" end
+    local size = f:seek("end") or 0
+    local off = size - max
+    if off < 0 then off = 0 end
+    f:seek("set", off)
+    local data = f:read("*a") or ""
+    f:close()
+    return data
+end
+
+local function local_version()
+    local v = read_file(VERSION_FILE)
+    if not v then return "?" end
+    v = v:gsub("%s+", "")
+    if v == "" then return "?" end
+    return v
+end
+
+local function remote_version()
+    local out = luci.sys.exec(string.format(
+        "curl -fsSL --connect-timeout 6 --max-time 12 %s/VERSION 2>/dev/null",
+        REPO_RAW))
+    return (out or ""):gsub("%s+", "")
+end
+
+local REPO_RAW = "https://raw.githubusercontent.com/syamsulsariphidayat7/hg680pcls/main"
+local VERSION_FILE = "/usr/lib/lua/luci/view/hg680pcls/VERSION"
+
 local function get_config()
     local uci = luci.model.uci.cursor()
     return {
@@ -73,6 +111,7 @@ function action_status()
     luci.http.write(luci.jsonc.stringify({
         online  = online,
         service = service_running() and "running" or "stopped",
+        version = local_version(),
         config  = cfg,
         targets = targets,
     }))
@@ -119,41 +158,6 @@ function action_save()
 end
 
 -- ===================== Update dari GitHub =====================
-
-local function read_file(path)
-    local f = io.open(path, "r")
-    if not f then return nil end
-    local data = f:read("*a")
-    f:close()
-    return data
-end
-
-local function read_tail(path, max)
-    local f = io.open(path, "rb")
-    if not f then return "" end
-    local size = f:seek("end") or 0
-    local off = size - max
-    if off < 0 then off = 0 end
-    f:seek("set", off)
-    local data = f:read("*a") or ""
-    f:close()
-    return data
-end
-
-local function local_version()
-    local v = read_file(VERSION_FILE)
-    if not v then return "?" end
-    v = v:gsub("%s+", "")
-    if v == "" then return "?" end
-    return v
-end
-
-local function remote_version()
-    local out = luci.sys.exec(string.format(
-        "curl -fsSL --connect-timeout 6 --max-time 12 %s/VERSION 2>/dev/null",
-        REPO_RAW))
-    return (out or ""):gsub("%s+", "")
-end
 
 function action_check()
     local lv = local_version()
