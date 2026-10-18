@@ -6,6 +6,11 @@
 
 REPO="https://raw.githubusercontent.com/syamsulsariphidayat7/hg680pcls/main"
 
+if ! command -v curl >/dev/null 2>&1; then
+    echo "✖ curl tidak ditemukan. Jalankan dulu: opkg update && opkg install curl"
+    exit 1
+fi
+
 echo "[HG680PCLS] Downloading and installing..."
 TMP_DIR="/tmp/hg680pcls"
 mkdir -p "$TMP_DIR" && cd "$TMP_DIR" || exit 1
@@ -31,11 +36,24 @@ rm -f /usr/lib/lua/luci/model/cbi/hg680pcls.lua
 # Copy ke sistem
 echo "[HG680PCLS] Installing files..."
 mkdir -p /usr/lib/lua/luci/view/hg680pcls
-cp -f etc/config/hg680pcls /etc/config/
+
+# Simpan config lama agar setelan user tidak hilang saat upgrade
+if [ -f /etc/config/hg680pcls ]; then
+    cp -f /etc/config/hg680pcls /etc/config/hg680pcls.bak
+    echo "[HG680PCLS] Config lama dibackup ke /etc/config/hg680pcls.bak"
+fi
+
 cp -f etc/init.d/hg680pcls /etc/init.d/
 cp -f usr/bin/hg680pcl /usr/bin/
 cp -f usr/lib/lua/luci/controller/hg680pcls.lua /usr/lib/lua/luci/controller/
 cp -f usr/lib/lua/luci/view/hg680pcls/dashboard.htm /usr/lib/lua/luci/view/hg680pcls/
+
+# Hanya pasang config default bila belum ada (jangan timpa setelan user)
+if [ -f /etc/config/hg680pcls ]; then
+    echo "[HG680PCLS] Mempertahankan config yang sudah ada"
+else
+    cp -f etc/config/hg680pcls /etc/config/
+fi
 
 # Set permission
 chmod 755 /etc/init.d/hg680pcls /usr/bin/hg680pcl

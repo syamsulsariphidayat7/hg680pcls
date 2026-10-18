@@ -12,26 +12,34 @@ function index()
         call("action_save")).leaf = true
 end
 
-local MODES = { off = true, on = true, heart = true, disko = true }
+local MODES = { offline = true, online = true, heart = true, disko = true }
 
 local function get_config()
     local uci = luci.model.uci.cursor()
     return {
-        power_mode   = uci:get("hg680pcls", "settings", "power_mode") or "heart",
-        lan_mode     = uci:get("hg680pcls", "settings", "lan_mode") or "disko",
-        ping_targets = uci:get("hg680pcls", "settings", "ping_targets") or "8.8.8.8 1.1.1.1",
+        power_mode   = uci:get("hg680pcls", "settings", "power_mode") or "online",
+        lan_mode     = uci:get("hg680pcls", "settings", "lan_mode") or "heart",
+        ping_targets = uci:get("hg680pcls", "settings", "ping_targets") or "graph.instagram.com",
         interval     = tonumber(uci:get("hg680pcls", "settings", "interval")) or 5,
     }
 end
 
-local function ping_check(host)
-    local p = io.popen("ping -c1 -W1 "
-        .. luci.util.shellquote(host) .. " 2>/dev/null")
-    if not p then return false, nil end
-    local out = p:read("*a")
-    p:close()
-    local ms = out:match("time=([%d%.]+)")
-    return ms ~= nil, ms and tonumber(ms) or nil
+local function ping_check_all(hosts)
+    local jobs = {}
+    for i, host in ipairs(hosts) do
+        jobs[#jobs + 1] = string.format(
+            "( r=$(ping -c1 -W1 %s 2>/dev/null); "
+            .. "ms=$(echo \"$r\" | sed -n 's/.*time=\\([0-9.]*\\).*/\\1/p'); "
+            .. "if [ -n \"$ms\" ]; then echo \"%d ok $ms\"; else echo \"%d bad\"; fi ) &",
+            luci.util.shellquote(host), i, i)
+    end
+    local out = luci.sys.exec("{ " .. table.concat(jobs, " ")
+        .. " wait; } 2>/dev/null")
+    local results = {}
+    for idx, status, ms in out:gmatch("(%d+) (%a+)([^\n]*)") do
+        results[tonumber(idx)] = { ok = status == "ok", ms = tonumber(ms) }
+    end
+    return results
 end
 
 local function service_running()
@@ -41,15 +49,18 @@ end
 
 function action_status()
     local cfg = get_config()
+    local hosts = {}
+    for host in cfg.ping_targets:gmatch("%S+") do
+        hosts[#hosts + 1] = host
+        if #hosts >= 8 then break end
+    end
+    local res = ping_check_all(hosts)
     local targets = {}
     local online = false
-    local n = 0
-    for host in cfg.ping_targets:gmatch("%S+") do
-        n = n + 1
-        if n > 8 then break end
-        local ok, ms = ping_check(host)
-        if ok then online = true end
-        targets[#targets + 1] = { host = host, ok = ok, ms = ms }
+    for i, host in ipairs(hosts) do
+        local r = res[i] or {}
+        if r.ok then online = true end
+        targets[#targets + 1] = { host = host, ok = r.ok or false, ms = r.ms }
     end
     luci.http.prepare_content("application/json")
     luci.http.write(luci.jsonc.stringify({
@@ -80,8 +91,8 @@ function action_save()
     if not (lan_mode and MODES[lan_mode]) then
         return bad("lan_mode tidak valid")
     end
-    if not (interval and interval >= 1 and interval <= 300) then
-        return bad("interval harus 1-300 detik")
+    if not (interval and interval >= 1 and interval <= 60) then
+        return bad("interval harus 1-60 detik")
     end
     if ping_targets == "" then
         return bad("ping target tidak boleh kosong")

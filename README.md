@@ -31,9 +31,9 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/syamsulsariphidayat7/hg680
 Setelah instalasi, buka:
 > **LuCI → Services → HG680PCLS**
 
-Dashboard modern (tema gelap) berisi:
+Dashboard modern berisi:
 - 🟢 **Status koneksi live** — ONLINE/OFFLINE + latensi per target, refresh otomatis tiap 5 detik
-- 💡 **Pemilih mode LED** (Power & LAN) — kartu visual dengan preview animasi pola kedip (Off / On / Heart / Disko)
+- 💡 **Pemilih mode LED** (Power & LAN) — kartu visual dengan preview animasi pola kedip (Offline / Online / Heart / Disko)
 - 🎯 **Ping target** — input multi target + tombol preset cepat
 - ⏱️ **Interval cek** — slider 1–60 detik
 - 💾 **Simpan & Restart Service** — satu tombol, langsung apply ke `/etc/config/hg680pcls` dan restart service
@@ -44,7 +44,7 @@ Jika belum muncul LOGOUT dulu atau:
 ```
 ## 🚀 Ping target sesuaikan bisa IP atau Host (support multi)
 
-Contoh : 8.8.8.8 1.1.1.1 ava.game.naver.com
+Contoh : graph.instagram.com 8.8.8.8 1.1.1.1
 
 ---
 

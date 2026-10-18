@@ -43,14 +43,15 @@ EOF
 }
 
 # ========== MODES ==========
-mode_off() {      # loop mati → merah
+mode_offline() {  # kedip pin OFF (merah)
     run_pattern "$1" "$2" \
         "0:0:0.5" \
         "0:1:0.5"
 }
-mode_on() {       # hijau nyala terus (tidak kedip)
-    set_gpio "$1" 1
-    set_gpio "$2" 0
+mode_online() {   # kedip pin ON (hijau), pola sama seperti offline
+    run_pattern "$1" "$2" \
+        "1:0:0.5" \
+        "0:0:0.5"
 }
 mode_heart() {    # loop mati → kuning → hijau
     run_pattern "$1" "$2" \
@@ -81,12 +82,12 @@ start_mode() {
     stop_mode "$name"
 
     case "$mode" in
-        off)
-            mode_off "$pin_on" "$pin_off" &
+        offline)
+            mode_offline "$pin_on" "$pin_off" &
             echo $! > "$PID_DIR/${name}.pid"
             ;;
-        on)
-            mode_on "$pin_on" "$pin_off" &
+        online)
+            mode_online "$pin_on" "$pin_off" &
             echo $! > "$PID_DIR/${name}.pid"
             ;;
         heart)
@@ -104,7 +105,8 @@ start_mode() {
 }
 
 usage() {
-    echo "Usage: $0 {power|lan} {off|on|heart|disko}" >&2
+    echo "Usage: $0 {power|lan} {offline|online|heart|disko}" >&2
+    echo "       $0 reset" >&2
     exit 1
 }
 
@@ -112,5 +114,10 @@ usage() {
 case "$1" in
     power) start_mode power "$2" "$PIN_POWER_ON" "$PIN_POWER_OFF" ;;
     lan)   start_mode lan   "$2" "$PIN_LAN_ON" "$PIN_LAN_OFF" ;;
+    reset|stop)
+        # Matikan semua pola LED & kembalikan pin GPIO ke kondisi aman
+        stop_mode power
+        stop_mode lan
+        ;;
     *)     usage ;;
 esac
