@@ -5,7 +5,7 @@
 .hg-title{margin:0;font-size:26px;letter-spacing:1px}
 .hg-title .hg-accent{color:var(--hg-green)}
 .hg-sub{margin:4px 0 0;color:var(--hg-muted);font-size:13px}
-.hg-topright{display:flex;align-items:center;gap:10px}
+.hg-topright{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .hg-pill{display:flex;align-items:center;gap:8px;background:var(--hg-card);border:1px solid var(--hg-border);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600}
 .hg-dot{width:10px;height:10px;border-radius:50%;background:#6e7681}
 .hg-pill.on .hg-dot{background:var(--hg-green);box-shadow:0 0 10px var(--hg-green);animation:hg-pulse 1.6s infinite}
@@ -63,6 +63,13 @@
 .hg-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .hg-toast.ok{border-color:var(--hg-green);color:var(--hg-green)}
 .hg-toast.err{border-color:var(--hg-red);color:var(--hg-red)}
+.hg-updrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hg-upd-note{font-size:12px;color:var(--hg-muted)}
+.hg-upd-btn{margin-left:auto}
+.hg-pill.hg-ver{cursor:default}
+.hg-pill.hg-ver.up{border-color:var(--hg-amber)}
+.hg-pill.hg-ver.up .hg-dot{background:var(--hg-amber);box-shadow:0 0 10px var(--hg-amber);animation:none}
+.hg-log{margin:14px 0 0;background:#0f1720;color:#c9d6e4;border-radius:10px;padding:12px 14px;font-size:11.5px;line-height:1.5;max-height:230px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,monospace}
 @media(max-width:640px){.hg-modes{grid-template-columns:repeat(2,1fr)}}
 </style>
 
@@ -131,6 +138,20 @@
       <p class="hg-hint">Jeda antar pengecekan ping (1&ndash;60 detik). Makin kecil makin responsif, makin besar makin hemat resource.</p>
     </section>
 
+    <section class="hg-card">
+      <h2>Update</h2>
+      <div class="hg-updrow">
+        <div class="hg-pill hg-ver" id="verPill" title="Versi terpasang">
+          <span class="hg-dot" id="verDot"></span>
+          <span>Terpasang: v<b id="verLocal">&mdash;</b></span>
+        </div>
+        <span class="hg-upd-note" id="verNote">memeriksa versi&hellip;</span>
+        <button class="cbi-button cbi-button-action hg-upd-btn" id="updateBtn" type="button">Update dari GitHub</button>
+      </div>
+      <pre class="hg-log" id="updateLog" hidden></pre>
+      <p class="hg-hint">Ambil versi terbaru dari GitHub. Setelan &amp; target ping kamu tetap dipertahankan; service otomatis restart.</p>
+    </section>
+
     <section class="hg-card hg-foot">
       <b>Syamsul Sarip Hidayat</b> &middot; Boundless<br>
       <a href="https://github.com/syamsulsariphidayat7/hg680pcls" target="_blank" rel="noopener">hg680pcls</a>
@@ -152,6 +173,8 @@
 var STATUS_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "status")%>";
 var SAVE_URL   = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "save")%>";
 var CSRF_TOKEN = "<%=token%>";
+var CHECK_URL  = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "check")%>";
+var UPDATE_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "update")%>";
 
 var state = { power: "online", lan: "heart", targets: "", interval: 5 };
 var firstLoad = true;
@@ -177,6 +200,26 @@ function apiSave(){
     + "&interval=" + encodeURIComponent(state.interval)
     + "&ping_targets=" + encodeURIComponent(state.targets);
   return fetch(SAVE_URL, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body
+  }).then(function(r){ return r.json(); });
+}
+
+function apiCheck(){
+  if (window.HG_MOCK) {
+    return Promise.resolve(window.HG_MOCK.check || { local: "dev", remote: "dev", update: false });
+  }
+  return fetch(CHECK_URL, { credentials: "same-origin" }).then(function(r){ return r.json(); });
+}
+
+function apiUpdate(){
+  if (window.HG_MOCK) {
+    return Promise.resolve({ ok: true, local: "dev", log: "[mock] updated" });
+  }
+  var body = "token=" + encodeURIComponent(CSRF_TOKEN);
+  return fetch(UPDATE_URL, {
     method: "POST",
     credentials: "same-origin",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -336,6 +379,48 @@ $("saveBtn").addEventListener("click", function(){
   });
 });
 
+function renderVersion(d){
+  if (!d) return;
+  $("verLocal").textContent = d.local || "?";
+  var pill = $("verPill");
+  if (d.update) {
+    pill.classList.add("up");
+    $("verNote").textContent = "Update tersedia: v" + d.remote;
+  } else if (d.remote) {
+    pill.classList.remove("up");
+    $("verNote").textContent = "Terbaru (v" + d.remote + ")";
+  } else {
+    pill.classList.remove("up");
+    $("verNote").textContent = "Tidak bisa cek versi terbaru";
+  }
+}
+
+function checkUpdate(){ apiCheck().then(renderVersion).catch(function(){}); }
+
+$("updateBtn").addEventListener("click", function(){
+  var btn = $("updateBtn");
+  if (!confirm("Update ke versi terbaru dari GitHub?\nSetelan & target ping tetap dipertahankan, service akan restart.")) return;
+  var log = $("updateLog");
+  log.hidden = false;
+  log.textContent = "Mengunduh & memasang dari GitHub...\n";
+  btn.disabled = true; btn.textContent = "Mengupdate...";
+  apiUpdate().then(function(r){
+    log.textContent += (r && (r.log || r.error)) || "";
+    if (r && r.ok) {
+      toast("Update berhasil. Memuat ulang...", "ok");
+      setTimeout(function(){ location.reload(); }, 2500);
+    } else {
+      toast("Update gagal. Lihat log di bawah.", "err");
+      btn.disabled = false; btn.textContent = "Update dari GitHub";
+    }
+  }).catch(function(){
+    log.textContent += "Gagal menghubungi STB.";
+    toast("Update gagal.", "err");
+    btn.disabled = false; btn.textContent = "Update dari GitHub";
+  });
+});
+
+checkUpdate();
 refresh();
 setInterval(function(){ if (!document.hidden) refresh(); }, 5000);
 })();

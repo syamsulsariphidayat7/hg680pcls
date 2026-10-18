@@ -16,6 +16,7 @@ TMP_DIR="/tmp/hg680pcls"
 mkdir -p "$TMP_DIR" && cd "$TMP_DIR" || exit 1
 
 FILES="
+VERSION
 etc/config/hg680pcls
 etc/init.d/hg680pcls
 usr/bin/hg680pcl
@@ -47,6 +48,7 @@ cp -f etc/init.d/hg680pcls /etc/init.d/
 cp -f usr/bin/hg680pcl /usr/bin/
 cp -f usr/lib/lua/luci/controller/hg680pcls.lua /usr/lib/lua/luci/controller/
 cp -f usr/lib/lua/luci/view/hg680pcls/dashboard.htm /usr/lib/lua/luci/view/hg680pcls/
+cp -f VERSION /usr/lib/lua/luci/view/hg680pcls/VERSION
 
 # Hanya pasang config default bila belum ada (jangan timpa setelan user)
 if [ -f /etc/config/hg680pcls ]; then
@@ -60,11 +62,15 @@ chmod 755 /etc/init.d/hg680pcls /usr/bin/hg680pcl
 chmod 644 /etc/config/hg680pcls
 chmod 644 /usr/lib/lua/luci/controller/hg680pcls.lua
 chmod 644 /usr/lib/lua/luci/view/hg680pcls/dashboard.htm
+chmod 644 /usr/lib/lua/luci/view/hg680pcls/VERSION
 
 # Clean-slate: matikan service & sisa proses LED supaya tidak "bertumpuk" saat reinstall
 /etc/init.d/hg680pcls stop 2>/dev/null
 [ -x /usr/bin/hg680pcl ] && /usr/bin/hg680pcl reset 2>/dev/null
 rm -rf /tmp/hg680p_led
+
+# Bersihkan cache menu LuCI agar perubahan langsung terlihat
+rm -f /tmp/luci-indexcache /tmp/luci-indexcache.* 2>/dev/null
 
 # Enable dan mulai service
 /etc/init.d/hg680pcls enable 2>/dev/null

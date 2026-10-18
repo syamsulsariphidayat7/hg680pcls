@@ -10,9 +10,16 @@ function index()
         call("action_status")).leaf = true
     entry({"admin", "services", "hg680pcls", "save"},
         call("action_save")).leaf = true
+    entry({"admin", "services", "hg680pcls", "check"},
+        call("action_check")).leaf = true
+    entry({"admin", "services", "hg680pcls", "update"},
+        call("action_update")).leaf = true
 end
 
 local MODES = { offline = true, online = true, heart = true, disko = true }
+
+local REPO_RAW = "https://raw.githubusercontent.com/syamsulsariphidayat7/hg680pcls/main"
+local VERSION_FILE = "/usr/lib/lua/luci/view/hg680pcls/VERSION"
 
 local function get_config()
     local uci = luci.model.uci.cursor()
@@ -111,3 +118,78 @@ function action_save()
     http.write(luci.jsonc.stringify({ ok = true }))
 end
 
+-- ===================== Update dari GitHub =====================
+
+local function read_file(path)
+    local f = io.open(path, "r")
+    if not f then return nil end
+    local data = f:read("*a")
+    f:close()
+    return data
+end
+
+local function read_tail(path, max)
+    local f = io.open(path, "rb")
+    if not f then return "" end
+    local size = f:seek("end") or 0
+    local off = size - max
+    if off < 0 then off = 0 end
+    f:seek("set", off)
+    local data = f:read("*a") or ""
+    f:close()
+    return data
+end
+
+local function local_version()
+    local v = read_file(VERSION_FILE)
+    if not v then return "?" end
+    v = v:gsub("%s+", "")
+    if v == "" then return "?" end
+    return v
+end
+
+local function remote_version()
+    local out = luci.sys.exec(string.format(
+        "curl -fsSL --connect-timeout 6 --max-time 12 %s/VERSION 2>/dev/null",
+        REPO_RAW))
+    return (out or ""):gsub("%s+", "")
+end
+
+function action_check()
+    local lv = local_version()
+    local rv = remote_version()
+    luci.http.prepare_content("application/json")
+    luci.http.write(luci.jsonc.stringify({
+        ok        = true,
+        ["local"] = lv,
+        remote    = rv,
+        update    = (rv ~= "" and rv ~= lv),
+    }))
+end
+
+function action_update()
+    local http = luci.http
+    http.prepare_content("application/json")
+
+    local function fail(msg)
+        http.write(luci.jsonc.stringify({ ok = false, error = msg }))
+    end
+
+    if http.getenv("REQUEST_METHOD") ~= "POST" then
+        http.status(405, "Method Not Allowed")
+        return fail("POST required")
+    end
+
+    local logfile = "/tmp/hg680pcls-update.log"
+    local cmd = string.format(
+        "sh -c \"$(curl -fsSL %s/install.sh)\" >%s 2>&1",
+        REPO_RAW, logfile)
+    local rc = luci.sys.call(cmd)
+
+    http.write(luci.jsonc.stringify({
+        ok        = rc == 0,
+        code      = rc,
+        ["local"] = local_version(),
+        log       = read_tail(logfile, 4000),
+    }))
+end
