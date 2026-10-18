@@ -10,7 +10,7 @@ Ringkas — update tiap akhir sesi.
 - [x] Tombol **Pasang ulang** di kartu Update (perbaikan tanpa harus ada versi baru).
 - [x] Tanda skala slider interval (5, 10, … 60, bisa diklik).
 - [x] `VERSION` → 1.2.4 + entri `CHANGELOG.md`.
-- [ ] Commit + push + tag `v1.2.4` → **menunggu izin user**.
+- [x] Commit + push + tag `v1.2.4` (`19b990a`); resolver GitHub sudah mengembalikan `1.2.4`.
 
 ## Sudah selesai (rilis sebelumnya)
 - v1.2.3 — keamanan (`save`/`update` wajib POST + token CSRF), validasi `ping_targets`
