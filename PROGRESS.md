@@ -13,7 +13,12 @@ Ringkas — update tiap akhir sesi.
 - [x] Catatan rilis di dashboard (dibaca dari `CHANGELOG.md`).
 - [x] Dokumentasi: `AGENTS.md`, `PROGRESS.md`, `docs/api.md`, `docs/adr/`, `LICENSE`, `CHANGELOG.md`.
 - [x] UI: latar halaman putih + bar simpan in-flow (tidak menutupi footer).
-- [ ] Commit + push + tag `v1.2.3` → **menunggu izin user**.
+- [x] Commit + push ke `main` + tag `v1.2.3` sudah dipush (`627ed4a`, `545bc45`, `7e5f983`).
+
+## Verifikasi rilis (setelah push)
+- `GET /tags` GitHub sudah melihat `v1.2.3`; pipeline installer → `1.2.3`.
+- File di ref tag tersedia: `VERSION`, `install.sh`, `CHANGELOG.md`, `LICENSE`.
+- **Belum diuji di STB** (uji visual/tombol menunggu user).
 
 ## Sudah selesai (rilis sebelumnya)
 - Service `procd` loop ping + kontrol LED GPIO; sweep proses pola LED (anti tumpuk).
