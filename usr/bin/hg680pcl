@@ -30,6 +30,7 @@ kill_led_procs() {
     for d in /proc/[0-9]*; do
         pid="${d#/proc/}"
         [ "$pid" = "$$" ] && continue
+        [ -r "$d/cmdline" ] || continue
         cmd=$(tr '\0' ' ' < "$d/cmdline" 2>/dev/null)
         case "$cmd" in
             "/bin/sh /usr/bin/hg680pcl power "*|"/bin/sh /usr/bin/hg680pcl lan "*)
@@ -81,16 +82,36 @@ mode_disko() {    # loop mati → kuning → hijau
         "1:0:0.1"
 }
 
+# Tunggu proses benar-benar keluar (maks ~0,5 detik). Penting: trap di run_pattern
+# me-reset pin saat keluar — kalau tidak ditunggu, nilainya bisa menimpa nilai
+# baru yang baru saja ditulis (balapan saat ganti mode).
+wait_gone() {
+    local p="$1" i=0
+    [ -n "$p" ] || return 0
+    while [ -d "/proc/$p" ] && [ "$i" -lt 25 ]; do
+        sleep 0.02
+        i=$((i + 1))
+    done
+    true
+}
+
 # ========== MODE HANDLER ==========
 stop_mode() {
-    local name="$1" pid_file="$PID_DIR/${name}.pid"
+    local name="$1"
+    # catatan: JANGAN gabung jadi satu `local` — ${name} belum tentu sudah terisi
+    # di shell yang mengevaluasi RHS lebih dulu (dash), akibatnya PID file tak ketemu
+    # dan pola lama tidak pernah dimatikan ("LED bertumpuk").
+    local pid_file="$PID_DIR/${name}.pid"
     if [ -f "$pid_file" ]; then
         local p c
         p=$(cat "$pid_file" 2>/dev/null)
         c=$(tr '\0' ' ' < "/proc/$p/cmdline" 2>/dev/null)
         # hanya bunuh kalau PID itu memang proses hg680pcl (hindari PID basi/terpakai ulang)
         case "$c" in
-            *hg680pcl*) kill "$p" 2>/dev/null ;;
+            *hg680pcl*)
+                kill "$p" 2>/dev/null
+                wait_gone "$p"
+                ;;
         esac
         rm -f "$pid_file"
     fi
@@ -106,19 +127,19 @@ start_mode() {
 
     case "$mode" in
         offline)
-            mode_offline "$pin_on" "$pin_off" &
+            mode_offline "$pin_on" "$pin_off" >/dev/null 2>&1 &
             echo $! > "$PID_DIR/${name}.pid"
             ;;
         online)
-            mode_online "$pin_on" "$pin_off" &
+            mode_online "$pin_on" "$pin_off" >/dev/null 2>&1 &
             echo $! > "$PID_DIR/${name}.pid"
             ;;
         heart)
-            mode_heart "$pin_on" "$pin_off" &
+            mode_heart "$pin_on" "$pin_off" >/dev/null 2>&1 &
             echo $! > "$PID_DIR/${name}.pid"
             ;;
         disko)
-            mode_disko "$pin_on" "$pin_off" &
+            mode_disko "$pin_on" "$pin_off" >/dev/null 2>&1 &
             echo $! > "$PID_DIR/${name}.pid"
             ;;
         *)
