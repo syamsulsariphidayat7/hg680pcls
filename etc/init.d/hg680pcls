@@ -9,7 +9,7 @@ LED_SCRIPT="/usr/bin/hg680pcl"
 start_service() {
     procd_open_instance
     procd_set_param command /bin/sh -c "
-        trap '$LED_SCRIPT reset 2>/dev/null' TERM INT EXIT
+        trap '$LED_SCRIPT reset 2>/dev/null; exit 0' TERM INT EXIT
         ping_targets=\$(uci get hg680pcls.settings.ping_targets 2>/dev/null || echo 'graph.instagram.com')
         interval=\$(uci get hg680pcls.settings.interval 2>/dev/null || echo 5)
         power_mode=\$(uci get hg680pcls.settings.power_mode 2>/dev/null || echo 'online')
@@ -41,5 +41,6 @@ start_service() {
 
 stop_service() {
     $LED_SCRIPT reset 2>/dev/null
+    rm -rf /tmp/hg680p_led
     true
 }

@@ -24,6 +24,21 @@ reset_gpio() {
     set_gpio "$2" 0
 }
 
+# Sapu semua proses pola LED yang masih hidup (termasuk yang tak tercatat di PID file)
+# Dipakai untuk mencegah pola "bertumpuk" saat mode diganti / service di-restart.
+kill_led_procs() {
+    for d in /proc/[0-9]*; do
+        pid="${d#/proc/}"
+        [ "$pid" = "$$" ] && continue
+        cmd=$(tr '\0' ' ' < "$d/cmdline" 2>/dev/null)
+        case "$cmd" in
+            "/bin/sh /usr/bin/hg680pcl power "*|"/bin/sh /usr/bin/hg680pcl lan "*)
+                kill "$pid" 2>/dev/null
+                ;;
+        esac
+    done
+}
+
 # ========== PATTERN ENGINE ==========
 # Format step: "PIN_ON:PIN_OFF:DURATION"
 run_pattern() {
@@ -69,8 +84,16 @@ mode_disko() {    # loop mati → kuning → hijau
 # ========== MODE HANDLER ==========
 stop_mode() {
     local name="$1" pid_file="$PID_DIR/${name}.pid"
-    [ -f "$pid_file" ] && kill "$(cat "$pid_file")" 2>/dev/null || true
-    rm -f "$pid_file"
+    if [ -f "$pid_file" ]; then
+        local p c
+        p=$(cat "$pid_file" 2>/dev/null)
+        c=$(tr '\0' ' ' < "/proc/$p/cmdline" 2>/dev/null)
+        # hanya bunuh kalau PID itu memang proses hg680pcl (hindari PID basi/terpakai ulang)
+        case "$c" in
+            *hg680pcl*) kill "$p" 2>/dev/null ;;
+        esac
+        rm -f "$pid_file"
+    fi
     case "$name" in
         power) reset_gpio "$PIN_POWER_ON" "$PIN_POWER_OFF" ;;
         lan)   reset_gpio "$PIN_LAN_ON" "$PIN_LAN_OFF" ;;
@@ -115,9 +138,11 @@ case "$1" in
     power) start_mode power "$2" "$PIN_POWER_ON" "$PIN_POWER_OFF" ;;
     lan)   start_mode lan   "$2" "$PIN_LAN_ON" "$PIN_LAN_OFF" ;;
     reset|stop)
-        # Matikan semua pola LED & kembalikan pin GPIO ke kondisi aman
+        # Matikan semua pola LED (termasuk yang tak tercatat) & reset GPIO
         stop_mode power
         stop_mode lan
+        kill_led_procs
+        rm -rf "$PID_DIR"
         ;;
     *)     usage ;;
 esac
