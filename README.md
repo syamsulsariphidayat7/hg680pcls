@@ -19,6 +19,12 @@ Custom LuCI Script & Service untuk STB HG680P berbasis OpenWrt.
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/syamsulsariphidayat7/hg680pcls/main/install.sh)"
 ```
 
+Installer otomatis memakai **tag rilis terbaru** (`v<versi>`), bukan branch `main`.
+Mau pin atau rollback ke versi tertentu:
+```bash
+HG680PCLS_REF=v1.2.2 sh -c "$(curl -fsSL https://raw.githubusercontent.com/syamsulsariphidayat7/hg680pcls/main/install.sh)"
+```
+
 ---
 
 ## 🧹 Uninstall
@@ -36,7 +42,7 @@ Dashboard berisi:
 - 💡 **Mode LED** (Power & LAN) — kartu visual dengan preview animasi pola kedip (Offline / Online / Heart / Disko)
 - 🎯 **Ping target** — input multi target; tiap host tampil sebagai chip dengan **status inline** (dot + latensi, live). Klik chip untuk hapus.
 - ⏱️ **Interval cek** — slider 1–60 detik
-- 🔄 **Update** (baris sendiri, digabung dengan kontak) — tombol **Cek Update**; kalau ada versi baru, tombol **Install Update** muncul + tombol **Repo GitHub** (setelan dipertahankan)
+- 🔄 **Update** (baris sendiri) — tombol **Cek Update**; kalau ada versi baru, tombol **Install Update** muncul beserta **catatan rilis**, plus tombol **Repo GitHub** (setelan dipertahankan)
 - 💾 **Simpan & Restart Service** — tombol bergaya LuCI, langsung apply ke `/etc/config/hg680pcls` dan restart service
 
 Jika belum muncul LOGOUT dulu atau:
@@ -47,10 +53,34 @@ Jika belum muncul LOGOUT dulu atau:
 
 Contoh : graph.instagram.com 8.8.8.8 1.1.1.1
 
+Batas: **maksimal 8 target**, dipisah spasi. Karakter yang diizinkan hanya huruf/angka, titik,
+strip, garis bawah, dan titik dua (nama host atau IP). Target yang tidak valid ditolak saat simpan.
+
+---
+
+## 🔐 Keamanan & versi
+
+- Endpoint **Simpan** dan **Update** wajib **POST + token CSRF** sesi LuCI (dua lapis: dispatcher
+  LuCI dan pemeriksaan di dalam action).
+- **Update** menjalankan installer resmi GitHub sebagai `root` — hanya bisa dipicu dari sesi admin
+  LuCI yang login.
+- Versi terpasang terlihat di kartu Update. Rilis ditandai **tag `v<versi>`** di GitHub dan installer
+  menarik dari tag itu (bukan `main`), jadi pemasangan selalu pada keadaan yang sudah ditandai rilis.
+
+---
+
+## 📚 Dokumen
+
+- [Catatan rilis / riwayat versi](CHANGELOG.md)
+- [Kontrak API](docs/api.md)
+- [Keputusan arsitektur (ADR)](docs/adr/0001-lua-template-bukan-cbi.md)
+- [Aturan pengembangan proyek](AGENTS.md) &middot; [Progres](PROGRESS.md)
+
 ---
 
 ## ⚖️ Lisensi
-Crashoverride © 2025 [Syamsul Sarip Hidayat](https://github.com/syamsulsariphidayat7)
+MIT — Crashoverride © 2025-2026 [Syamsul Sarip Hidayat](https://github.com/syamsulsariphidayat7)
+(lihat [`LICENSE`](LICENSE))
 
 ---
 
