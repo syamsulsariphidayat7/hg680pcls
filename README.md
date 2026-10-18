@@ -36,7 +36,7 @@ Dashboard berisi:
 - 💡 **Mode LED** (Power & LAN) — kartu visual dengan preview animasi pola kedip (Offline / Online / Heart / Disko)
 - 🎯 **Ping target** — input multi target; tiap host tampil sebagai chip dengan **status inline** (dot + latensi, live). Klik chip untuk hapus.
 - ⏱️ **Interval cek** — slider 1–60 detik
-- 🔄 **Update** — tombol **Cek Update**; kalau ada versi baru, tombol **Install Update** muncul (setelan dipertahankan)
+- 🔄 **Update** (baris sendiri, digabung dengan kontak) — tombol **Cek Update**; kalau ada versi baru, tombol **Install Update** muncul + tombol **Repo GitHub** (setelan dipertahankan)
 - 💾 **Simpan & Restart Service** — tombol bergaya LuCI, langsung apply ke `/etc/config/hg680pcls` dan restart service
 
 Jika belum muncul LOGOUT dulu atau:

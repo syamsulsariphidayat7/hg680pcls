@@ -1,6 +1,6 @@
 <%+header%>
 <style>
-.hg-wrap{--hg-bg:#eef2f6;--hg-card:#ffffff;--hg-border:#d3dae2;--hg-text:#1b2330;--hg-muted:#5c6a7a;--hg-bar:rgba(255,255,255,.94);--hg-green:#22c55e;--hg-red:#ef4444;--hg-amber:#f59e0b;max-width:100%;padding:16px 14px 110px;background:linear-gradient(180deg,#f7fafc,#eef2f6);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--hg-text)}
+.hg-wrap{--hg-bg:#eef2f6;--hg-card:#ffffff;--hg-border:#d3dae2;--hg-text:#1b2330;--hg-muted:#5c6a7a;--hg-bar:rgba(255,255,255,.94);--hg-green:#22c55e;--hg-red:#ef4444;--hg-amber:#f59e0b;max-width:100%;padding:16px 14px 18px;background:linear-gradient(180deg,#f7fafc,#eef2f6);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--hg-text)}
 .hg-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .hg-title{margin:0;font-size:26px;letter-spacing:1px}
 .hg-title .hg-accent{color:var(--hg-green)}
@@ -14,6 +14,8 @@
 .hg-pill.off{color:var(--hg-red);border-color:#fecaca}
 @keyframes hg-pulse{0%,100%{opacity:1}50%{opacity:.45}}
 .hg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.hg-grid+.hg-grid{margin-top:14px}
+.hg-grid-wide{grid-template-columns:1fr}
 .hg-card{background:var(--hg-card);border:1px solid var(--hg-border);border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(16,24,40,.04),0 8px 24px rgba(16,24,40,.05);transition:box-shadow .2s ease,transform .2s ease}
 .hg-card:hover{box-shadow:0 2px 6px rgba(16,24,40,.06),0 14px 34px rgba(16,24,40,.08);transform:translateY(-1px)}
 .hg-card h2{margin:0 0 14px;font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:var(--hg-muted)}
@@ -24,8 +26,6 @@
 .hg-tchip.bad .hg-cdot{background:var(--hg-red);box-shadow:0 0 8px var(--hg-red)}
 .hg-cms{color:var(--hg-muted);font-size:11px}
 .hg-chips-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--hg-muted);margin:14px 0 2px}
-.hg-svc{margin-top:12px;font-size:12px;color:var(--hg-muted)}
-.hg-svc b{color:var(--hg-text)}
 .hg-modes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .hg-mode{display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--hg-bg);border:1px solid var(--hg-border);border-radius:12px;padding:14px 6px;cursor:pointer;color:var(--hg-text);font-size:12px;transition:border-color .15s,transform .15s}
 .hg-mode:hover{transform:translateY(-2px)}
@@ -46,10 +46,8 @@
 .hg-range{width:100%;accent-color:var(--hg-green)}
 .hg-rangeval{font-size:26px;font-weight:700;color:var(--hg-green)}
 .hg-rangeval small{font-size:13px;color:var(--hg-muted);font-weight:400}
-.hg-foot{font-size:12px;color:var(--hg-muted);text-align:center;line-height:1.7}
-.hg-foot a{color:#3b82f6}
-.hg-savebar{position:fixed;left:0;right:0;bottom:0;background:var(--hg-bar);backdrop-filter:blur(8px);border-top:1px solid var(--hg-border);padding:14px 0;z-index:50}
-.hg-savebar-inner{max-width:100%;margin:0 auto;padding:0 16px;box-sizing:border-box;display:flex;justify-content:flex-end;align-items:center;gap:14px}
+.hg-savebar{margin-top:16px;background:var(--hg-bar);border-top:1px solid var(--hg-border);padding:14px 0 0}
+.hg-savebar-inner{max-width:100%;margin:0 auto;padding:0;box-sizing:border-box;display:flex;justify-content:flex-end;align-items:center;gap:14px}
 .hg-dirty{font-size:12px;color:var(--hg-amber)}
 .hg-savebar .cbi-button{min-width:220px;font-weight:600;font-size:14px}
 .hg-toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--hg-card);border:1px solid var(--hg-border);border-radius:10px;padding:12px 22px;font-size:13px;opacity:0;transition:all .25s;pointer-events:none;z-index:60;max-width:90vw;text-align:center}
@@ -59,6 +57,7 @@
 .hg-updrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .hg-upd-note{font-size:12px;color:var(--hg-muted)}
 .hg-upd-btns{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.hg-upd-btns a.cbi-button{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;line-height:1.2}
 .hg-hide{display:none!important}
 .hg-pill.hg-ver{cursor:default}
 .hg-pill.hg-ver.up{border-color:var(--hg-amber)}
@@ -118,7 +117,9 @@
       <input class="hg-range" id="interval" type="range" min="1" max="60" step="1" value="5">
       <p class="hg-hint">Jeda antar pengecekan ping (1&ndash;60 detik). Makin kecil makin responsif, makin besar makin hemat resource.</p>
     </section>
+  </div>
 
+  <div class="hg-grid hg-grid-wide">
     <section class="hg-card">
       <h2>Update</h2>
       <div class="hg-updrow">
@@ -130,16 +131,11 @@
         <div class="hg-upd-btns">
           <button class="cbi-button cbi-button-action" id="checkBtn" type="button">Cek Update</button>
           <button class="cbi-button cbi-button-apply hg-hide" id="updateBtn" type="button">Install Update</button>
+          <a class="cbi-button" href="https://github.com/syamsulsariphidayat7/hg680pcls" target="_blank" rel="noopener">Repo GitHub</a>
         </div>
       </div>
       <pre class="hg-log hg-hide" id="updateLog"></pre>
-      <p class="hg-hint">Klik <b>Cek Update</b> untuk bandingkan versi terpasang dengan GitHub. Kalau ada versi baru, tombol <b>Install Update</b> muncul. Setelan &amp; target ping tetap dipertahankan.</p>
-    </section>
-
-    <section class="hg-card hg-foot">
-      <b>Syamsul Sarip Hidayat</b> &middot; Boundless<br>
-      <a href="https://github.com/syamsulsariphidayat7/hg680pcls" target="_blank" rel="noopener">hg680pcls</a>
-      <div class="hg-svc">Service: <b id="svcState">&mdash;</b></div>
+      <p class="hg-hint">Klik <b>Cek Update</b> untuk bandingkan versi terpasang dengan GitHub. Kalau ada versi baru, tombol <b>Install Update</b> muncul. Setelan &amp; target ping tetap dipertahankan.<br>Service: <b id="svcState">&mdash;</b> &middot; Syamsul Sarip Hidayat &middot; Boundless</p>
     </section>
   </div>
 
