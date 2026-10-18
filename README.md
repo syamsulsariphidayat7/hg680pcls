@@ -31,12 +31,12 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/syamsulsariphidayat7/hg680
 Setelah instalasi, buka:
 > **LuCI → Services → HG680PCLS**
 
-Halaman pengaturan berbentuk **form native LuCI** (tombol **Save & Apply**, mengikuti tema aktif):
-- 🟢 **Status koneksi** — ONLINE/OFFLINE + latensi per target (read-only, dihitung saat halaman dibuka)
-- 💡 **Mode LED** (Power & LAN) — pilihan Offline / Online / Heart / Disko, dengan preview animasi pola
-- 🎯 **Ping target** — input multi target, dipisah spasi
-- ⏱️ **Interval cek** — 1–60 detik
-- 💾 **Save & Apply** — menyimpan ke `/etc/config/hg680pcls` lalu otomatis me-restart service
+Dashboard modern berisi:
+- 🟢 **Status koneksi** — ONLINE/OFFLINE + latensi per target (auto-refresh tiap 5 detik)
+- 💡 **Mode LED** (Power & LAN) — kartu visual dengan preview animasi pola kedip (Offline / Online / Heart / Disko)
+- 🎯 **Ping target** — input multi target; tiap host tampil sebagai chip dengan **status inline** (dot + latensi, live). Klik chip untuk hapus.
+- ⏱️ **Interval cek** — slider 1–60 detik
+- 💾 **Simpan & Restart Service** — tombol bergaya LuCI, langsung apply ke `/etc/config/hg680pcls` dan restart service
 
 Jika belum muncul LOGOUT dulu atau:
 ```bash

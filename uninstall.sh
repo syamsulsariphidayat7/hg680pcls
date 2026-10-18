@@ -15,9 +15,9 @@ rm -f /etc/config/hg680pcls
 rm -f /etc/init.d/hg680pcls
 rm -f /usr/bin/hg680pcl
 rm -f /usr/lib/lua/luci/controller/hg680pcls.lua
-rm -f /usr/lib/lua/luci/model/cbi/hg680pcls.lua
-# Sisa halaman UI lama (template) dari versi sebelumnya
 rm -rf /usr/lib/lua/luci/view/hg680pcls
+# Sisa UI CBI dari versi sebelumnya
+rm -f /usr/lib/lua/luci/model/cbi/hg680pcls.lua
 
 # Bersihkan sisa runtime
 rm -rf /tmp/hg680p_led

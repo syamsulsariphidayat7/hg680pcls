@@ -20,7 +20,7 @@ etc/config/hg680pcls
 etc/init.d/hg680pcls
 usr/bin/hg680pcl
 usr/lib/lua/luci/controller/hg680pcls.lua
-usr/lib/lua/luci/model/cbi/hg680pcls.lua
+usr/lib/lua/luci/view/hg680pcls/dashboard.htm
 "
 
 # Download semua file dari repo GitHub
@@ -30,12 +30,12 @@ for f in $FILES; do
     curl -fsSL "$REPO/$f" -o "$f" || { echo "✖ Gagal download $f"; exit 1; }
 done
 
-# Bersihkan sisa halaman UI lama (template) kalau upgrade dari versi sebelumnya
-rm -rf /usr/lib/lua/luci/view/hg680pcls
+# Bersihkan sisa CBI dari versi sebelumnya (kini pakai template view)
+rm -f /usr/lib/lua/luci/model/cbi/hg680pcls.lua
 
 # Copy ke sistem
 echo "[HG680PCLS] Installing files..."
-mkdir -p /usr/lib/lua/luci/model/cbi
+mkdir -p /usr/lib/lua/luci/view/hg680pcls
 
 # Simpan config lama agar setelan user tidak hilang saat upgrade
 if [ -f /etc/config/hg680pcls ]; then
@@ -46,7 +46,7 @@ fi
 cp -f etc/init.d/hg680pcls /etc/init.d/
 cp -f usr/bin/hg680pcl /usr/bin/
 cp -f usr/lib/lua/luci/controller/hg680pcls.lua /usr/lib/lua/luci/controller/
-cp -f usr/lib/lua/luci/model/cbi/hg680pcls.lua /usr/lib/lua/luci/model/cbi/
+cp -f usr/lib/lua/luci/view/hg680pcls/dashboard.htm /usr/lib/lua/luci/view/hg680pcls/
 
 # Hanya pasang config default bila belum ada (jangan timpa setelan user)
 if [ -f /etc/config/hg680pcls ]; then
@@ -59,7 +59,7 @@ fi
 chmod 755 /etc/init.d/hg680pcls /usr/bin/hg680pcl
 chmod 644 /etc/config/hg680pcls
 chmod 644 /usr/lib/lua/luci/controller/hg680pcls.lua
-chmod 644 /usr/lib/lua/luci/model/cbi/hg680pcls.lua
+chmod 644 /usr/lib/lua/luci/view/hg680pcls/dashboard.htm
 
 # Clean-slate: matikan service & sisa proses LED supaya tidak "bertumpuk" saat reinstall
 /etc/init.d/hg680pcls stop 2>/dev/null
