@@ -39,7 +39,8 @@ Setelah instalasi, buka:
 
 Dashboard berisi:
 - 🟢 **Status koneksi** — cukup di **pill pojok kanan atas** (ONLINE/OFFLINE, auto-refresh tiap 5 detik)
-- 💡 **Mode LED** (Power & LAN) — kartu visual dengan preview animasi pola kedip (Offline / Online / Heart / Disko)
+- 💡 **Mode LED Power & LAN** — kartu visual dengan preview animasi pola kedip (Offline / Online / Heart / Disko)
+- 🔵 **LED Status** (pin default `518`) — LED ketiga yang berdiri sendiri, tidak ikut status koneksi. Mode: **Mati**, **Nyala**, **Detak** (heartbeat, default), **Disko**. Pakai **Mati** kalau di unitmu pin ini bukan LED.
 - 🎯 **Ping target** — input multi target; tiap host tampil sebagai chip dengan **status inline** (dot + latensi, live). Klik chip untuk hapus.
 - ⏱️ **Interval cek** — slider 1–60 detik dengan tanda skala **5, 10, 15, … 60** (angkanya bisa diklik untuk lompat ke nilai itu)
 - 🔄 **Update** (baris sendiri) — tombol **Cek Update**; kalau ada versi baru, tombol **Install Update** muncul beserta **catatan rilis**, plus **Pasang ulang** (memasang kembali rilis terbaru untuk perbaikan) dan tombol **Repo GitHub** (setelan dipertahankan)
@@ -55,6 +56,36 @@ Contoh : graph.instagram.com 8.8.8.8 1.1.1.1
 
 Batas: **maksimal 8 target**, dipisah spasi. Karakter yang diizinkan hanya huruf/angka, titik,
 strip, garis bawah, dan titik dua (nama host atau IP). Target yang tidak valid ditolak saat simpan.
+
+---
+
+## 🔧 Nomor pin GPIO (opsional)
+
+Default sudah cocok untuk HG680P "2GB" (pin power 521/517, LAN 547/548, LED status 518).
+Kalau board revisimu beda, override lewat UCI tanpa perlu edit skrip:
+
+```bash
+uci set hg680pcls.settings.power_pin_on='521'
+uci set hg680pcls.settings.power_pin_off='517'
+uci set hg680pcls.settings.lan_pin_on='547'
+uci set hg680pcls.settings.lan_pin_off='548'
+uci set hg680pcls.settings.status_pin='518'
+uci commit hg680pcls && /etc/init.d/hg680pcls restart
+```
+
+Cara memastikan sebuah pin memang LED (dan bukan penerima IR atau USB reset):
+
+```bash
+echo 518 > /sys/class/gpio/export
+echo out > /sys/class/gpio/gpio518/direction
+while true; do echo 1 > /sys/class/gpio/gpio518/value; sleep 0.3
+              echo 0 > /sys/class/gpio/gpio518/value; sleep 0.3; done
+# amati: LED mana yang berkedip? remote masih jalan? USB tidak terputus?
+# Ctrl+C lalu: echo 518 > /sys/class/gpio/unexport
+```
+
+Referensi pin komunitas (proyek `luci-app-gpioled`): HG680P R1GB = power 483/484, IR 480,
+ethernet 481/482; HG680P R2GB = power 425/426, IR 507, ethernet 506/510.
 
 ---
 

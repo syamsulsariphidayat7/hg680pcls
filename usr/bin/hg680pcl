@@ -1,11 +1,21 @@
 #!/bin/sh
 
-# GPIO pin POWER
-PIN_POWER_ON=521
-PIN_POWER_OFF=517
+# Nomor pin default. Bisa dioverride lewat UCI hg680pcls.settings.*
+# (mis. `uci set hg680pcls.settings.status_pin=519`) untuk board revisi lain.
+uget() {
+    local v
+    v=$(uci -q get "hg680pcls.settings.$1" 2>/dev/null)
+    [ -n "$v" ] && printf '%s' "$v" || printf '%s' "$2"
+}
+
+# GPIO pin POWER (dua warna: hijau/merah)
+PIN_POWER_ON="$(uget power_pin_on 521)"
+PIN_POWER_OFF="$(uget power_pin_off 517)"
 # GPIO pin LAN
-PIN_LAN_ON=547
-PIN_LAN_OFF=548
+PIN_LAN_ON="$(uget lan_pin_on 547)"
+PIN_LAN_OFF="$(uget lan_pin_off 548)"
+# GPIO pin STATUS (LED tunggal, mis. LED IR) — mode: off/on/heart/disko
+PIN_STATUS="$(uget status_pin 518)"
 
 PID_DIR="/tmp/hg680p_led"
 mkdir -p "$PID_DIR"
@@ -19,9 +29,11 @@ set_gpio() {
     printf "%s" "$val" > "/sys/class/gpio/gpio${pin}/value" 2>/dev/null || true
 }
 
+# Pin kedua boleh kosong (LED tunggal): yang kosong dilewati.
 reset_gpio() {
-    set_gpio "$1" 0
-    set_gpio "$2" 0
+    [ -n "$1" ] && set_gpio "$1" 0
+    [ -n "$2" ] && set_gpio "$2" 0
+    true
 }
 
 # Sapu semua proses pola LED yang masih hidup (termasuk yang tak tercatat di PID file)
@@ -33,7 +45,7 @@ kill_led_procs() {
         [ -r "$d/cmdline" ] || continue
         cmd=$(tr '\0' ' ' < "$d/cmdline" 2>/dev/null)
         case "$cmd" in
-            "/bin/sh /usr/bin/hg680pcl power "*|"/bin/sh /usr/bin/hg680pcl lan "*)
+            "/bin/sh /usr/bin/hg680pcl power "*|"/bin/sh /usr/bin/hg680pcl lan "*|"/bin/sh /usr/bin/hg680pcl status "*)
                 kill "$pid" 2>/dev/null
                 ;;
         esac
@@ -41,7 +53,7 @@ kill_led_procs() {
 }
 
 # ========== PATTERN ENGINE ==========
-# Format step: "PIN_ON:PIN_OFF:DURATION"
+# Format step: "PIN_ON:PIN_OFF:DURATION" (PIN_OFF diabaikan bila kosong)
 run_pattern() {
     local pin_on="$1" pin_off="$2"; shift 2
     trap "reset_gpio \"$pin_on\" \"$pin_off\"; exit" TERM INT
@@ -52,13 +64,13 @@ run_pattern() {
 $step
 EOF
             set_gpio "$pin_on" "$v_on"
-            set_gpio "$pin_off" "$v_off"
+            [ -n "$pin_off" ] && set_gpio "$pin_off" "$v_off"
             sleep "$dur"
         done
     done
 }
 
-# ========== MODES ==========
+# ========== MODES (LED dua warna: power & lan) ==========
 mode_offline() {  # kedip pin OFF (merah)
     run_pattern "$1" "$2" \
         "0:0:0.5" \
@@ -82,9 +94,23 @@ mode_disko() {    # loop mati → kuning → hijau
         "1:0:0.1"
 }
 
+# ========== MODES (LED tunggal: status) ==========
+mode_heart_single() {  # dua kedip cepat lalu jeda (detak)
+    run_pattern "$1" "" \
+        "1::0.12" \
+        "0::0.12" \
+        "1::0.12" \
+        "0::1.0"
+}
+mode_disko_single() {  # kedip cepat
+    run_pattern "$1" "" \
+        "1::0.09" \
+        "0::0.09"
+}
+
 # Tunggu proses benar-benar keluar (maks ~0,5 detik). Penting: trap di run_pattern
 # me-reset pin saat keluar — kalau tidak ditunggu, nilainya bisa menimpa nilai
-# baru yang baru saja ditulis (balapan saat ganti mode).
+# baru yang baru saja ditulis untuk mode steady (on/off).
 wait_gone() {
     local p="$1" i=0
     [ -n "$p" ] || return 0
@@ -99,8 +125,7 @@ wait_gone() {
 stop_mode() {
     local name="$1"
     # catatan: JANGAN gabung jadi satu `local` — ${name} belum tentu sudah terisi
-    # di shell yang mengevaluasi RHS lebih dulu (dash), akibatnya PID file tak ketemu
-    # dan pola lama tidak pernah dimatikan ("LED bertumpuk").
+    # di shell yang mengevaluasi RHS lebih dulu (dash), akibatnya PID file tak ketemu.
     local pid_file="$PID_DIR/${name}.pid"
     if [ -f "$pid_file" ]; then
         local p c
@@ -116,8 +141,9 @@ stop_mode() {
         rm -f "$pid_file"
     fi
     case "$name" in
-        power) reset_gpio "$PIN_POWER_ON" "$PIN_POWER_OFF" ;;
-        lan)   reset_gpio "$PIN_LAN_ON" "$PIN_LAN_OFF" ;;
+        power)  reset_gpio "$PIN_POWER_ON" "$PIN_POWER_OFF" ;;
+        lan)    reset_gpio "$PIN_LAN_ON" "$PIN_LAN_OFF" ;;
+        status) reset_gpio "$PIN_STATUS" ;;
     esac
 }
 
@@ -148,20 +174,45 @@ start_mode() {
     esac
 }
 
+# LED tunggal: off/on itu steady (tanpa proses latar), heart/disko berkedip.
+start_status_mode() {
+    local mode="$1" pin="$PIN_STATUS"
+    stop_mode status
+
+    case "$mode" in
+        off)   set_gpio "$pin" 0 ;;
+        on)    set_gpio "$pin" 1 ;;
+        heart)
+            mode_heart_single "$pin" >/dev/null 2>&1 &
+            echo $! > "$PID_DIR/status.pid"
+            ;;
+        disko)
+            mode_disko_single "$pin" >/dev/null 2>&1 &
+            echo $! > "$PID_DIR/status.pid"
+            ;;
+        *)
+            usage
+            ;;
+    esac
+}
+
 usage() {
     echo "Usage: $0 {power|lan} {offline|online|heart|disko}" >&2
+    echo "       $0 status {off|on|heart|disko}" >&2
     echo "       $0 reset" >&2
     exit 1
 }
 
 # ========== MAIN ==========
 case "$1" in
-    power) start_mode power "$2" "$PIN_POWER_ON" "$PIN_POWER_OFF" ;;
-    lan)   start_mode lan   "$2" "$PIN_LAN_ON" "$PIN_LAN_OFF" ;;
+    power)  start_mode power "$2" "$PIN_POWER_ON" "$PIN_POWER_OFF" ;;
+    lan)    start_mode lan   "$2" "$PIN_LAN_ON" "$PIN_LAN_OFF" ;;
+    status) start_status_mode "$2" ;;
     reset|stop)
         # Matikan semua pola LED (termasuk yang tak tercatat) & reset GPIO
         stop_mode power
         stop_mode lan
+        stop_mode status
         kill_led_procs
         rm -rf "$PID_DIR"
         ;;

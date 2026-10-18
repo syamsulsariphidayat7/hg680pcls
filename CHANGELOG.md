@@ -4,6 +4,23 @@ Semua perubahan penting proyek ini didokumentasikan di sini.
 Versi mengikuti `MAJOR.MINOR.PATCH`, dan **setiap rilis diberi tag `v<versi>`** di GitHub
 (tag inilah yang dipakai installer & tombol Update — bukan branch `main`).
 
+## 1.3.0 (2026-10-18)
+- **LED ketiga (pin 518)** — kartu baru **LED Status**: LED tunggal yang tidak ikut status koneksi.
+  Mode: **Mati** (pin tidak digerakkan), **Nyala** (terang terus), **Detak** (heartbeat, default),
+  dan **Disko**. Default `heart` = kedip pelan sebagai tanda service hidup.
+- Nomor pin kini bisa dioverride lewat UCI (berguna untuk board revisi lain yang beda pin):
+  `power_pin_on` (521), `power_pin_off` (517), `lan_pin_on` (547), `lan_pin_off` (548),
+  `status_pin` (518).
+- Perbaikan bug lama yang berhubungan dengan "LED bertumpuk": `stop_mode()` gagal menemukan PID file
+  karena `local name="$1" pid_file="$DIR/${name}.pid"` dievaluasi sebelum `name` terisi di sebagian
+  shell (dash) — akibatnya proses pola lama tidak pernah dimatikan.
+- Proses pola LED kini menutup stdout/stderr-nya sendiri, supaya tidak menahan pipe pemanggil
+  (mis. `luci.sys.exec`) dan membuat request menggantung.
+- Saat ganti dari pola ke mode steady, kini menunggu proses lama benar-benar keluar dulu — mencegah
+  trap proses lama menimpa nilai pin yang baru ditulis.
+- Sweep proses tidak lagi mencetak pesan `/proc/NNN/cmdline: No such file` saat proses hilang
+  di tengah iterasi.
+
 ## 1.2.4 (2026-10-18)
 - Tombol **Pasang ulang** di kartu Update: memasang kembali rilis terbaru untuk perbaikan
   (berguna saat versi terpasang sudah terbaru tapi service/LED bermasalah — tombol Install Update

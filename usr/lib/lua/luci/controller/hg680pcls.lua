@@ -17,6 +17,8 @@ function index()
 end
 
 local MODES = { offline = true, online = true, heart = true, disko = true }
+-- LED ketiga (tunggal) tidak punya offline/online karena hanya satu pin.
+local STATUS_MODES = { off = true, on = true, heart = true, disko = true }
 
 local MAX_TARGETS = 8
 local REPO_SLUG = "syamsulsariphidayat7/hg680pcls"
@@ -147,6 +149,7 @@ local function get_config()
     return {
         power_mode   = uci:get("hg680pcls", "settings", "power_mode") or "online",
         lan_mode     = uci:get("hg680pcls", "settings", "lan_mode") or "heart",
+        status_mode  = uci:get("hg680pcls", "settings", "status_mode") or "heart",
         ping_targets = uci:get("hg680pcls", "settings", "ping_targets") or "graph.instagram.com",
         interval     = tonumber(uci:get("hg680pcls", "settings", "interval")) or 5,
     }
@@ -208,6 +211,7 @@ function action_save()
     local http = luci.http
     local power_mode   = http.formvalue("power_mode")
     local lan_mode     = http.formvalue("lan_mode")
+    local status_mode  = http.formvalue("status_mode")
     local interval     = tonumber(http.formvalue("interval"))
     local ping_targets = (http.formvalue("ping_targets") or "")
         :gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
@@ -224,6 +228,10 @@ function action_save()
     if not (lan_mode and MODES[lan_mode]) then
         return bad("lan_mode tidak valid")
     end
+    -- status_mode opsional: installasi lama belum punya setelan ini
+    if status_mode ~= nil and status_mode ~= "" and not STATUS_MODES[status_mode] then
+        return bad("status_mode tidak valid")
+    end
     if not (interval and interval >= 1 and interval <= 60) then
         return bad("interval harus 1-60 detik")
     end
@@ -238,6 +246,9 @@ function action_save()
     local uci = luci.model.uci.cursor()
     uci:set("hg680pcls", "settings", "power_mode", power_mode)
     uci:set("hg680pcls", "settings", "lan_mode", lan_mode)
+    if status_mode ~= nil and status_mode ~= "" then
+        uci:set("hg680pcls", "settings", "status_mode", status_mode)
+    end
     uci:set("hg680pcls", "settings", "interval", tostring(interval))
     uci:set("hg680pcls", "settings", "ping_targets", ping_targets)
     uci:commit("hg680pcls")

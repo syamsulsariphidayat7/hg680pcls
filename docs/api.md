@@ -20,26 +20,32 @@ Data untuk pill status & chip target di dashboard. Dipanggil berkala (5 detik).
 ```json
 {
   "online": true,
-  "power_mode": "online",
-  "lan_mode": "heart",
-  "interval": 5,
+  "service": "running",
+  "version": "1.3.0",
+  "config": {
+    "power_mode": "online",
+    "lan_mode": "heart",
+    "status_mode": "heart",
+    "ping_targets": "graph.instagram.com",
+    "interval": 5
+  },
   "targets": [
-    { "host": "graph.instagram.com", "up": true,  "ms": 18.4 },
-    { "host": "8.8.8.8",             "up": false, "ms": null }
-  ],
-  "service": true,
-  "version": "1.2.3"
+    { "host": "graph.instagram.com", "ok": true,  "ms": 18.4 },
+    { "host": "8.8.8.8",             "ok": false, "ms": null }
+  ]
 }
 ```
 
 | Field | Tipe | Keterangan |
 |---|---|---|
 | `online` | bool | `true` bila **minimal satu** target merespons |
-| `power_mode` / `lan_mode` | string | mode tersimpan (`offline`\|`online`\|`heart`\|`disko`) |
-| `interval` | number | interval cek (detik) |
-| `targets[]` | array | maksimum **8** entri; `ms` = latensi, `null` bila tidak merespons |
-| `service` | bool | status service `hg680pcls` (`running`) |
+| `service` | string | `"running"` / `"stopped"` (`pgrep -f /usr/bin/hg680pcl`) |
 | `version` | string | versi terpasang dari `VERSION`; `""` bila file tidak ada |
+| `config.power_mode` / `config.lan_mode` | string | mode tersimpan (`offline`\|`online`\|`heart`\|`disko`) |
+| `config.status_mode` | string | mode LED ketiga (`off`\|`on`\|`heart`\|`disko`) |
+| `config.ping_targets` | string | daftar target, dipisah spasi |
+| `config.interval` | number | interval cek (detik) |
+| `targets[]` | array | maksimum **8** entri; `ms` = latensi, `null` bila tidak merespons |
 
 Catatan: setiap target di-ping di server (`ping -c 1 -W 1`) memakai `luci.util.shellquote()`,
 jadi nilai dari UCI tidak pernah dieksekusi sebagai shell.
@@ -55,6 +61,7 @@ Simpan setelan lalu restart service. Body `application/x-www-form-urlencoded`.
 | `token` | ya | token CSRF sesi LuCI |
 | `power_mode` | ya | salah satu dari `offline`\|`online`\|`heart`\|`disko` |
 | `lan_mode` | ya | idem |
+| `status_mode` | tidak | salah satu dari `off`\|`on`\|`heart`\|`disko`; dilewati bila kosong/absen (installasi lama) |
 | `interval` | ya | angka 1–60 |
 | `ping_targets` | ya | dipisah spasi; maks **8**; tiap token cocok `^[A-Za-z0-9][A-Za-z0-9._:-]*$`, maks 253 char |
 
@@ -70,7 +77,7 @@ Simpan setelan lalu restart service. Body `application/x-www-form-urlencoded`.
 { "ok": false, "error": "target tidak valid: -f" }
 ```
 
-Pesan lain yang mungkin: `power_mode tidak valid`, `lan_mode tidak valid`,
+Pesan lain yang mungkin: `power_mode tidak valid`, `lan_mode tidak valid`, `status_mode tidak valid`,
 `interval harus 1-60 detik`, `maksimal 8 target`, `target terlalu panjang: …`,
 `ping target tidak boleh kosong`.
 
@@ -91,8 +98,8 @@ Bila API gagal (offline / rate limit), fallback membaca `VERSION` dari branch `m
 ```json
 {
   "ok": true,
-  "local": "1.2.3",
-  "remote": "1.2.4",
+  "local": "1.2.4",
+  "remote": "1.3.0",
   "update": true,
   "notes": "- Keamanan: endpoint save & update kini wajib POST + token CSRF.\n- …"
 }
@@ -130,9 +137,9 @@ Keduanya memanggil endpoint ini tanpa parameter tambahan; ref selalu rilis terba
 {
   "ok": true,
   "code": 0,
-  "ref": "v1.2.4",
-  "local": "1.2.4",
-  "log": "[HG680PCLS] Ref dipakai: v1.2.4\n…"
+  "ref": "v1.3.0",
+  "local": "1.3.0",
+  "log": "[HG680PCLS] Ref dipakai: v1.3.0\n…"
 }
 ```
 

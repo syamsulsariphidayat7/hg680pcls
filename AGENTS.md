@@ -17,7 +17,7 @@ VERSION                                   # penanda versi, dipasang ke /usr/lib/
 install.sh / uninstall.sh                 # installer & uninstaller (dijalankan di STB sebagai root)
 etc/config/hg680pcls                      # default UCI: ping_targets, interval, power_mode, lan_mode
 etc/init.d/hg680pcls                      # service procd: loop ping + set mode LED
-usr/bin/hg680pcl                          # skrip GPIO LED (mode: offline/online/heart/disko/reset)
+usr/bin/hg680pcl                          # skrip GPIO LED (power/lan: offline|online|heart|disko; status: off|on|heart|disko)
 usr/lib/lua/luci/controller/hg680pcls.lua # route LuCI + endpoint status/save/check/update
 usr/lib/lua/luci/view/hg680pcls/dashboard.htm  # halaman dashboard (CSS inline + JS vanilla)
 CHANGELOG.md                              # riwayat rilis (sumber catatan "Cek Update")
@@ -32,6 +32,15 @@ docs/api.md, docs/adr/                    # kontrak API & keputusan arsitektur
 
 ## Konvensi kode
 - Shell: POSIX `sh`, aman untuk busybox. Hindari `bashism`, `local` di luar fungsi, dan `sort -V` (pakai `-k n`).
+- Skrip LED (`usr/bin/hg680pcl`) — jebakan yang sudah pernah jadi bug, jangan diulang:
+  - Jangan gabung `local` yang saling merujuk (`local a="$1" b="$DIR/${a}.pid"`). Di shell yang mengevaluasi RHS
+    dulu (dash), `${a}` masih kosong → PID file tidak ketemu → pola lama tidak dimatikan ("LED bertumpuk").
+    Pisahkan jadi dua baris `local`.
+  - Proses pola yang dijalankan di latar **wajib** menutup `>/dev/null 2>&1`, supaya tidak menahan pipe
+    pemanggil (mis. `luci.sys.exec`) dan membuat request menggantung.
+  - Setelah `kill`, tunggu proses benar-benar keluar (`wait_gone`) sebelum menulis nilai steady — trap
+    proses lama me-reset pin dan bisa menimpa nilai baru (balapan).
+  - Nomor pin dibaca dari UCI (`hg680pcls.settings.*_pin`) dengan fallback default di skrip.
 - Lua: `module("luci.controller.hg680pcls", package.seeall)`; helper lokal dideklarasikan di atas
   sebelum dipakai; pola `local function x()` yang akan direferensikan dari fungsi lain harus berada di atas.
 - Template: semua variabel tampilan lewat `pcdata()`; JS ditulis ES5-ish (tanpa `const`/arrow) agar aman di
