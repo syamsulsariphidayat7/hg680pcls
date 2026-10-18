@@ -38,7 +38,7 @@ Setelah instalasi, buka:
 > **LuCI → Services → HG680PCLS**
 
 Dashboard berisi:
-- 🟢 **Status koneksi** — cukup di **pill pojok kanan atas** (ONLINE/OFFLINE, auto-refresh tiap 5 detik)
+- 🟢 **Status koneksi internet** — pill **Internet ONLINE/OFFLINE** di kartu **Service** (auto-refresh tiap 5 detik)
 - 💡 **Mode LED Power & LAN** — kartu visual dengan preview animasi pola kedip (Offline / Online / Heart / Disko)
 - 🔵 **LED USB** (pin default `518`) — LED indikator USB (di sebagian unit justru dipakai untuk mengendalikan kipas USB), tidak ikut status koneksi. Mode: **Mati**, **Nyala**, **Detak** (heartbeat, default), **Disko**.
 - 🎯 **Ping target** — input multi target; tiap host tampil sebagai chip dengan **status inline** (dot + latensi, live). Klik chip untuk hapus.
@@ -108,6 +108,7 @@ ethernet 481/482; HG680P R2GB = power 425/426, IR 507, ethernet 506/510.
 
 - [Catatan rilis / riwayat versi](CHANGELOG.md)
 - [Kontrak API](docs/api.md)
+- [Catatan diagnosa (troubleshooting)](docs/troubleshooting.md)
 - [Keputusan arsitektur (ADR)](docs/adr/0001-lua-template-bukan-cbi.md)
 - [Aturan pengembangan proyek](AGENTS.md) &middot; [Progres](PROGRESS.md)
 

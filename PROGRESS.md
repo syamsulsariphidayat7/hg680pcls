@@ -4,7 +4,7 @@ Ringkas — update tiap akhir sesi.
 
 **Tanggal terakhir diperbarui:** 2026-10-18
 **Fase:** Maintenance / fitur (setelah Development + Deployment)
-**Versi:** 1.4.0
+**Versi:** 1.4.1
 
 ## Sedang dikerjakan (sesi ini)
 - [x] **Kontrol service: Aktifkan / Nonaktifkan** — kartu **Service** (baris kedua, sebelum Update) dengan pill status
@@ -21,9 +21,16 @@ Ringkas — update tiap akhir sesi.
       unit dipakai untuk kendali kipas USB), urutan kartu LED jadi **LED LAN → LED USB → LED Power**,
       dan deskripsi panjang dihapus (kartu Service menyisakan status hidup, kartu Update kredit;
       label "Target aktif (klik untuk hapus)" tetap).
-- [ ] Commit + push + tag `v1.4.0` — **menunggu izin user**.
+- [x] Commit + push + tag **v1.4.0** (`f9dc99b`, tag `v1.4.0` sudah di-push & terverifikasi lewat GitHub API).
+- [x] Pill status internet dipindah dari pojok kanan atas ke kartu **Service** (di sebelah pill status
+      service, diberi label "Internet" + tooltip).
+- [x] Dokumentasi **`docs/troubleshooting.md`** — perintah tes konektivitas dari PC & dari STB,
+      urutan dugaan kenapa dashboard bilang OFFLINE padahal internet normal, cek service/LED,
+      serta cara update/rollback manual. Ditautkan dari README + daftar struktur `AGENTS.md`.
+- [ ] Commit + push + tag **v1.4.1**.
 - [ ] Uji di STB: tombol Nonaktifkan (LED mati + tidak ada proses), Aktifkan, setelah reboot,
-      plus urutan/penamaan kartu baru (LED LAN → LED USB → LED Power) dan kartu Service.
+      plus urutan/penamaan kartu baru (LED LAN → LED USB → LED Power), kartu Service,
+      dan posisi pill status internet (di kartu Service, bukan lagi pojok atas).
 
 ## Sudah selesai (rilis sebelumnya)
 - v1.2.4 — tombol **Pasang ulang** di kartu Update + skala slider interval (angka 5…60 bisa diklik).

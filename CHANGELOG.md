@@ -4,6 +4,14 @@ Semua perubahan penting proyek ini didokumentasikan di sini.
 Versi mengikuti `MAJOR.MINOR.PATCH`, dan **setiap rilis diberi tag `v<versi>`** di GitHub
 (tag inilah yang dipakai installer & tombol Update — bukan branch `main`).
 
+## 1.4.1 (2026-10-18)
+- Pill **status koneksi internet** dipindah dari pojok kanan atas ke kartu **Service**, di sebelah pill
+  status service, dan diberi label kecil "Internet" + tooltip supaya tidak tertukar dengan status
+  service. Header atas kini hanya judul halaman.
+- Dokumentasi baru [`docs/troubleshooting.md`](docs/troubleshooting.md): perintah tes konektivitas
+  dari PC & dari STB, urutan dugaan kenapa dashboard bisa bilang OFFLINE padahal internet normal,
+  cek service/LED, dan cara update/rollback manual.
+
 ## 1.4.0 (2026-10-18)
 - **Kontrol service: Aktifkan / Nonaktifkan** — kartu **Service** baru di dashboard dengan status
   langsung (berjalan/berhenti + autostart) dan satu tombol sakelar.

@@ -5,9 +5,9 @@
 .hg-title{margin:0;font-size:26px;letter-spacing:1px}
 .hg-title .hg-accent{color:var(--hg-green)}
 .hg-sub{margin:4px 0 0;color:var(--hg-muted);font-size:13px}
-.hg-topright{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .hg-pill{display:flex;align-items:center;gap:8px;background:var(--hg-card);border:1px solid var(--hg-border);border-radius:999px;padding:8px 16px;font-size:13px;font-weight:600}
 .hg-dot{width:10px;height:10px;border-radius:50%;background:#6e7681}
+.hg-pill-key{color:var(--hg-muted)}
 .hg-pill.on .hg-dot{background:var(--hg-green);box-shadow:0 0 10px var(--hg-green);animation:hg-pulse 1.6s infinite}
 .hg-pill.off .hg-dot{background:var(--hg-red);box-shadow:0 0 10px var(--hg-red)}
 .hg-pill.on{color:var(--hg-green);border-color:#bbf7d0}
@@ -81,11 +81,6 @@
       <h1 class="hg-title">HG680P<span class="hg-accent">CLS</span></h1>
       <p class="hg-sub">LED Control &amp; Ping Monitor &middot; STB HG680P</p>
     </div>
-    <div class="hg-topright">
-      <div class="hg-pill" id="statusPill">
-        <span class="hg-dot" id="statusDot"></span><span id="statusText">Memuat&hellip;</span>
-      </div>
-    </div>
   </div>
 
   <div class="hg-grid">
@@ -140,6 +135,9 @@
     <section class="hg-card">
       <h2>Service</h2>
       <div class="hg-svcrow">
+        <div class="hg-pill" id="statusPill" title="Status koneksi internet (hasil ping target)">
+          <span class="hg-dot" id="statusDot"></span><span class="hg-pill-key">Internet</span><span id="statusText">Memuat&hellip;</span>
+        </div>
         <div class="hg-pill" id="svcPill" title="Status service hg680pcls">
           <span class="hg-dot"></span>
           <span id="svcLabel">Service &mdash;</span>

@@ -22,6 +22,7 @@ usr/lib/lua/luci/controller/hg680pcls.lua # route LuCI + endpoint status/save/se
 usr/lib/lua/luci/view/hg680pcls/dashboard.htm  # halaman dashboard (CSS inline + JS vanilla)
 CHANGELOG.md                              # riwayat rilis (sumber catatan "Cek Update")
 docs/api.md, docs/adr/                    # kontrak API & keputusan arsitektur
+docs/troubleshooting.md                   # catatan diagnosa (ping, service, LED)
 ```
 
 ## Stack & versi
