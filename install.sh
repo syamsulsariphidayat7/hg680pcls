@@ -4,12 +4,32 @@
 #  by Syamsul Sarip Hidayat
 # ==========================================
 
-REPO="https://raw.githubusercontent.com/syamsulsariphidayat7/hg680pcls/main"
+SLUG="syamsulsariphidayat7/hg680pcls"
+RAW="https://raw.githubusercontent.com/$SLUG"
+API="https://api.github.com/repos/$SLUG"
 
 if ! command -v curl >/dev/null 2>&1; then
     echo "✖ curl tidak ditemukan. Jalankan dulu: opkg update && opkg install curl"
     exit 1
 fi
+
+# Tentukan ref rilis = tag v<versi> tertinggi (rilis selalu berbasis tag, bukan
+# branch main yang bisa setengah jadi). Bisa dipaksa manual untuk pin/rollback:
+#   HG680PCLS_REF=v1.2.2 sh -c "$(curl -fsSL .../main/install.sh)"
+REF="${HG680PCLS_REF:-}"
+if [ -z "$REF" ]; then
+    ver=$(curl -fsSL --connect-timeout 8 --max-time 15 "$API/tags?per_page=100" 2>/dev/null \
+        | sed -n 's/.*"name"[[:space:]]*:[[:space:]]*"v\([0-9][0-9.]*\)".*/\1/p' \
+        | sort -t. -k1,1n -k2,2n -k3,3n | tail -n1)
+    [ -n "$ver" ] && REF="v$ver"
+fi
+if [ -z "$REF" ]; then
+    REF="main"
+    echo "[HG680PCLS] ⚠ Tidak menemukan tag rilis di GitHub, memakai branch main"
+fi
+
+REPO="$RAW/$REF"
+echo "[HG680PCLS] Ref dipakai: $REF"
 
 echo "[HG680PCLS] Downloading and installing..."
 TMP_DIR="/tmp/hg680pcls"
@@ -81,6 +101,6 @@ cd /tmp
 rm -rf "$TMP_DIR"
 
 echo ""
-echo "[HG680PCLS] ✅ Installation complete!"
+echo "[HG680PCLS] ✅ Installation complete! (ref: $REF)"
 echo "[HG680PCLS] Access via LuCI → Services → HG680PCLS"
 echo ""

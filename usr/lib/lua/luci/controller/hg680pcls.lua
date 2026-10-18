@@ -9,17 +9,62 @@ function index()
     entry({"admin", "services", "hg680pcls", "status"},
         call("action_status")).leaf = true
     entry({"admin", "services", "hg680pcls", "save"},
-        call("action_save")).leaf = true
+        post("action_save")).leaf = true
     entry({"admin", "services", "hg680pcls", "check"},
         call("action_check")).leaf = true
     entry({"admin", "services", "hg680pcls", "update"},
-        call("action_update")).leaf = true
+        post("action_update")).leaf = true
 end
 
 local MODES = { offline = true, online = true, heart = true, disko = true }
 
-local REPO_RAW = "https://raw.githubusercontent.com/syamsulsariphidayat7/hg680pcls/main"
+local MAX_TARGETS = 8
+local REPO_SLUG = "syamsulsariphidayat7/hg680pcls"
+local REPO_RAW  = "https://raw.githubusercontent.com/" .. REPO_SLUG
+local REPO_API  = "https://api.github.com/repos/" .. REPO_SLUG
 local VERSION_FILE = "/usr/lib/lua/luci/view/hg680pcls/VERSION"
+
+-- Wajib POST + token CSRF yang sah (dipakai LuCI). Return false kalau ditolak;
+-- respons error sudah dikirim oleh LuCI, jadi pemanggil cukup `return`.
+local function require_post()
+    local disp = luci.dispatcher
+    if disp and disp.test_post_security then
+        return disp.test_post_security()
+    end
+    if luci.http.getenv("REQUEST_METHOD") ~= "POST" then
+        luci.http.status(405, "Method Not Allowed")
+        return false
+    end
+    local tok  = luci.http.formvalue("token")
+    local want = disp and disp.context and disp.context.authtoken
+    if tok and want and tok == want then
+        return true
+    end
+    luci.http.status(403, "Forbidden")
+    return false
+end
+
+-- Validasi target ping: cegah injeksi shell (dipakai loop `for host in $targets`
+-- di init.d) & opsi ping (token diawali '-').
+local function valid_targets(s)
+    local n = 0
+    for tok in s:gmatch("%S+") do
+        n = n + 1
+        if n > MAX_TARGETS then
+            return nil, "maksimal " .. MAX_TARGETS .. " target"
+        end
+        if #tok > 253 then
+            return nil, "target terlalu panjang: " .. tok
+        end
+        if not tok:match("^[A-Za-z0-9][A-Za-z0-9%.%-%:_]*$") then
+            return nil, "target tidak valid: " .. tok
+        end
+    end
+    if n == 0 then
+        return nil, "ping target tidak boleh kosong"
+    end
+    return true
+end
 
 local function read_file(path)
     local f = io.open(path, "r")
@@ -49,15 +94,53 @@ local function local_version()
     return v
 end
 
+-- Versi terbaru = tag rilis tertinggi (tag dinamai v<versi>).
+-- Tidak memakai /releases/latest karena repo ini tidak selalu punya "Release".
 local function remote_version()
     local out = luci.sys.exec(string.format(
-        "curl -fsSL --connect-timeout 6 --max-time 12 %s/VERSION 2>/dev/null",
+        "curl -fsSL --connect-timeout 6 --max-time 12 '%s/tags?per_page=100' 2>/dev/null",
+        REPO_API))
+    local best, bestnum
+    for v in (out or ""):gmatch('"name"%s*:%s*"v([0-9][0-9%.%-]*)"') do
+        local a, b, c = v:match("^(%d+)%.(%d+)%.(%d+)")
+        if a then
+            local num = tonumber(a) * 1000000 + tonumber(b) * 1000 + tonumber(c)
+            if not bestnum or num > bestnum then
+                bestnum, best = num, v
+            end
+        end
+    end
+    if best then
+        return best, ("v" .. best)
+    end
+    -- Fallback (API dibatasi / offline): baca VERSION dari branch main
+    local fb = luci.sys.exec(string.format(
+        "curl -fsSL --connect-timeout 6 --max-time 12 %s/main/VERSION 2>/dev/null",
         REPO_RAW))
-    return (out or ""):gsub("%s+", "")
+    return (fb or ""):gsub("%s+", ""), "main"
 end
 
-local REPO_RAW = "https://raw.githubusercontent.com/syamsulsariphidayat7/hg680pcls/main"
-local VERSION_FILE = "/usr/lib/lua/luci/view/hg680pcls/VERSION"
+-- Catatan rilis: ambil bagian CHANGELOG.md untuk versi tsb dari ref rilis.
+local function changelog_notes(ver, ref)
+    if not ver or ver == "" or not ref then return "" end
+    local txt = luci.sys.exec(string.format(
+        "curl -fsSL --connect-timeout 6 --max-time 12 %s/%s/CHANGELOG.md 2>/dev/null",
+        REPO_RAW, ref))
+    if not txt or txt == "" then return "" end
+    local out, on = {}, false
+    for line in (txt .. "\n"):gmatch("([^\n]*)\n") do
+        if line:match("^##%s") then
+            if on then break end
+            local v = line:gsub("^##%s*", ""):gsub("[%[%]]", ""):match("^([%w%.%-]+)")
+            if v == ver then on = true end
+        elseif on and line:match("%S") then
+            out[#out + 1] = line
+        end
+    end
+    local s = table.concat(out, "\n")
+    if #s > 900 then s = s:sub(1, 900) .. "\n…" end
+    return s
+end
 
 local function get_config()
     local uci = luci.model.uci.cursor()
@@ -97,7 +180,7 @@ function action_status()
     local hosts = {}
     for host in cfg.ping_targets:gmatch("%S+") do
         hosts[#hosts + 1] = host
-        if #hosts >= 8 then break end
+        if #hosts >= MAX_TARGETS then break end
     end
     local res = ping_check_all(hosts)
     local targets = {}
@@ -118,6 +201,10 @@ function action_status()
 end
 
 function action_save()
+    if not require_post() then
+        return
+    end
+
     local http = luci.http
     local power_mode   = http.formvalue("power_mode")
     local lan_mode     = http.formvalue("lan_mode")
@@ -143,6 +230,10 @@ function action_save()
     if ping_targets == "" then
         return bad("ping target tidak boleh kosong")
     end
+    local ok_t, err_t = valid_targets(ping_targets)
+    if not ok_t then
+        return bad(err_t)
+    end
 
     local uci = luci.model.uci.cursor()
     uci:set("hg680pcls", "settings", "power_mode", power_mode)
@@ -161,38 +252,41 @@ end
 
 function action_check()
     local lv = local_version()
-    local rv = remote_version()
+    local rv, ref = remote_version()
+    local has_update = (rv ~= "" and rv ~= lv)
     luci.http.prepare_content("application/json")
     luci.http.write(luci.jsonc.stringify({
         ok        = true,
         ["local"] = lv,
         remote    = rv,
-        update    = (rv ~= "" and rv ~= lv),
+        update    = has_update,
+        notes     = has_update and changelog_notes(rv, ref) or "",
     }))
 end
 
 function action_update()
+    if not require_post() then
+        return
+    end
+
     local http = luci.http
     http.prepare_content("application/json")
 
-    local function fail(msg)
-        http.write(luci.jsonc.stringify({ ok = false, error = msg }))
-    end
-
-    if http.getenv("REQUEST_METHOD") ~= "POST" then
-        http.status(405, "Method Not Allowed")
-        return fail("POST required")
-    end
+    -- Ambil installer dari ref rilis terbaru (fallback: main) supaya isi
+    -- yang dipasang konsisten dengan versi yang diumumkan.
+    local _, ref = remote_version()
+    if not ref or ref == "" then ref = "main" end
 
     local logfile = "/tmp/hg680pcls-update.log"
     local cmd = string.format(
-        "sh -c \"$(curl -fsSL %s/install.sh)\" >%s 2>&1",
-        REPO_RAW, logfile)
+        "sh -c \"$(curl -fsSL %s/%s/install.sh)\" >%s 2>&1",
+        REPO_RAW, ref, logfile)
     local rc = luci.sys.call(cmd)
 
     http.write(luci.jsonc.stringify({
         ok        = rc == 0,
         code      = rc,
+        ref       = ref,
         ["local"] = local_version(),
         log       = read_tail(logfile, 4000),
     }))
