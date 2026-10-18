@@ -31,6 +31,10 @@ Ringkas — update tiap akhir sesi.
       alur sukses/gagal/409/buntu, pemulihan setelah refresh) + **harness controller 36/36**
       (`/tmp/opencode/ctrl_test.lua`, stub luci/nixio: penanda `running`/`done`, perintah detached,
       protokol pid/rc dengan `curl` palsu, anti pemasangan ganda). Harness ada di `/tmp` (tidak di repo).
+- [x] Commit + push + tag **v1.4.2** (`333a2a1`, tag `v1.4.2` sudah di-push & terverifikasi lewat GitHub API:
+      `/tags` mengembalikan 1.4.2 teratas, `VERSION` = 1.4.2, heading pertama `CHANGELOG` = 1.4.2,
+      `docs/troubleshooting.md` & `docs/api.md` (bagian `GET /updatelog`) tersedia di tag, dan kode
+      controller/dashboard di tag memuat `action_updatelog`, route `updatelog`, `setsid`, `syncPanes`).
 - [ ] Uji di STB (v1.4.0–v1.4.2 sekaligus): urutan kartu & dua grup, baris Service rapat kiri, panel
       catatan/log, tombol Nonaktifkan/Aktifkan, **Cek Update → Install Update dengan log mengalir**,
       serta pemulihan saat halaman di-refresh di tengah pemasangan.
