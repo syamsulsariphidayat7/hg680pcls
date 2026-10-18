@@ -65,6 +65,21 @@ Ringkas — update tiap akhir sesi.
 - `node --check` blok `<script>` dashboard (setelah substitusi `<%=…%>`) → OK
 - Harness uji LED lokal (`/tmp/test_led.sh`, sysfs palsu) → semua langkah sesuai harapan
 
+## Rencana berikutnya (disetujui arahnya, belum dikerjakan)
+- **Paket `.ipk` sebagai pelengkap `install.sh`** — detail lengkap di
+  [`docs/plan-ipk.md`](docs/plan-ipk.md). Ringkas:
+  - Rute **A**: skrip `scripts/make-ipk.sh` (tanpa SDK; hanya `ar`+`tar`+`gzip` di host dev),
+    `Architecture: all`, `Depends: luci-lua-runtime`, `conffiles: /etc/config/hg680pcls`.
+  - Dibangun **di host dev**, bukan di PC user (keputusan user: hindari dependensi/storage/kuota).
+  - `install.sh` + tombol **Install Update** tetap jalur utama; `.ipk` untuk fresh install
+    (upload via LuCI → System → Software) dan `opkg remove` yang bersih.
+  - Konflik `opkg` vs `install.sh` → **fase 1**: cukup dokumentasi + pengingat; fase 2
+    (tombol Update sadar-jalur-pemasangan) ditunda.
+  - Target format: OpenWrt **24.10** (`opkg`/`.ipk`); 25.x SNAPSHOT sudah `apk` — jangan ikut dulu.
+  - Rencana versi rilis: **1.5.0**. Aset `.ipk` diunggah **manual** ke GitHub Release
+    (`gh` CLI tidak terpasang di host dev).
+  - Perkiraan: ±1–2 jam implementasi + uji lokal, ±10 menit uji STB, ±1 menit tiap rilis berikutnya.
+
 ## Langkah berikut (kandidat, belum disetujui)
 - CI GitHub Actions (shellcheck + luac -p + sh -n + node --check).
 - Histori uptime & tombol Restart Service.

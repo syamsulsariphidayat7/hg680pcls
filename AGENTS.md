@@ -23,6 +23,7 @@ usr/lib/lua/luci/view/hg680pcls/dashboard.htm  # halaman dashboard (CSS inline +
 CHANGELOG.md                              # riwayat rilis (sumber catatan "Cek Update")
 docs/api.md, docs/adr/                    # kontrak API & keputusan arsitektur
 docs/troubleshooting.md                   # catatan diagnosa (ping, service, LED)
+docs/plan-ipk.md                          # rencana paket .ipk (direncanakan, belum dikerjakan)
 ```
 
 ## Stack & versi
