@@ -39,10 +39,11 @@ Data untuk pill status & chip target di dashboard. Dipanggil berkala (5 detik).
 | Field | Tipe | Keterangan |
 |---|---|---|
 | `online` | bool | `true` bila **minimal satu** target merespons |
-| `service` | string | `"running"` / `"stopped"` (`pgrep -f /usr/bin/hg680pcl`) |
+| `service` | string | `"running"` / `"stopped"` (penanda `hg680pcls-service` di cmdline, fallback `pgrep -f /usr/bin/hg680pcl`) |
+| `enabled` | bool | `true` bila service aktif saat boot (ada symlink `/etc/rc.d/*hg680pcls`) |
 | `version` | string | versi terpasang dari `VERSION`; `""` bila file tidak ada |
 | `config.power_mode` / `config.lan_mode` | string | mode tersimpan (`offline`\|`online`\|`heart`\|`disko`) |
-| `config.status_mode` | string | mode LED ketiga (`off`\|`on`\|`heart`\|`disko`) |
+| `config.status_mode` | string | mode LED USB, pin 518 = LED indikator USB (`off`\|`on`\|`heart`\|`disko`) |
 | `config.ping_targets` | string | daftar target, dipisah spasi |
 | `config.interval` | number | interval cek (detik) |
 | `targets[]` | array | maksimum **8** entri; `ms` = latensi, `null` bila tidak merespons |
@@ -114,6 +115,41 @@ Bila API gagal (offline / rate limit), fallback membaca `VERSION` dari branch `m
 
 ---
 
+## `POST /service` — **POST+token**
+
+Nyalakan/matikan service `hg680pcls` dari dashboard (kartu **Service**).
+
+| Param | Wajib | Nilai |
+|---|---|---|
+| `token` | ya | token CSRF sesi LuCI |
+| `action` | ya | `on` (enable autostart + start) atau `off` (stop + disable autostart) |
+
+Yang dijalankan:
+
+| `action` | Perintah |
+|---|---|
+| `on` | `/etc/init.d/hg680pcls enable` lalu `start` |
+| `off` | `/etc/init.d/hg680pcls stop` (LED direset oleh service) lalu `disable` |
+
+**Response 200**
+
+```json
+{ "ok": true, "running": true, "enabled": true }
+```
+
+**Response 400**
+
+```json
+{ "ok": false, "error": "action tidak valid" }
+```
+
+**Response 403 / 405** — sama seperti `/save`.
+
+Catatan: `POST /save` tidak menghidupkan service yang sedang nonaktif (restart hanya dijalankan
+bila service memang aktif). Installer juga mempertahankan keadaan nonaktif saat reinstall/upgrade.
+
+---
+
 ## `POST /update` — **POST+token**
 
 Jalankan installer resmi dari ref rilis, sebagai root.
@@ -157,6 +193,7 @@ Keduanya memanggil endpoint ini tanpa parameter tambahan; ref selalu rilis terba
 
 ## Keamanan (ringkas)
 - `save` & `update` = **POST + token CSRF** (dua lapis: dispatcher LuCI + `require_post()`).
+- `service` (`action=on|off`) = **POST + token CSRF**, memakai helper yang sama.
 - `status` & `check` = GET, read-only.
 - `/update` menjalankan installer sebagai **root** — hanya bisa dipicu dari sesi admin LuCI
   yang login (token CSRF + ACL `luci`).

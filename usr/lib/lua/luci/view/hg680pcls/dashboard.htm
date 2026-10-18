@@ -57,6 +57,8 @@
 .hg-toast.ok{border-color:var(--hg-green);color:var(--hg-green)}
 .hg-toast.err{border-color:var(--hg-red);color:var(--hg-red)}
 .hg-updrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hg-svcrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hg-svcrow .cbi-button{margin-left:auto;min-width:150px}
 .hg-upd-note{font-size:12px;color:var(--hg-muted)}
 .hg-upd-btns{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
 .hg-upd-btns a.cbi-button{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;line-height:1.2}
@@ -88,17 +90,6 @@
 
   <div class="hg-grid">
     <section class="hg-card">
-      <h2>LED Power</h2>
-      <div class="hg-modes" id="powerModes">
-        <button type="button" class="hg-mode" data-group="power" data-mode="offline"><span class="hg-led m-offline"></span>Offline</button>
-        <button type="button" class="hg-mode" data-group="power" data-mode="online"><span class="hg-led m-online"></span>Online</button>
-        <button type="button" class="hg-mode" data-group="power" data-mode="heart"><span class="hg-led m-heart"></span>Heart</button>
-        <button type="button" class="hg-mode" data-group="power" data-mode="disko"><span class="hg-led m-disko"></span>Disko</button>
-      </div>
-      <p class="hg-hint">Pola kedip LED power. <b>Offline</b> = merah berkedip, <b>Online</b> = hijau berkedip, <b>Heart</b> = detak kuning-hijau, <b>Disko</b> = cepat warna-warni.</p>
-    </section>
-
-    <section class="hg-card">
       <h2>LED LAN</h2>
       <div class="hg-modes" id="lanModes">
         <button type="button" class="hg-mode" data-group="lan" data-mode="offline"><span class="hg-led m-offline"></span>Offline</button>
@@ -106,18 +97,27 @@
         <button type="button" class="hg-mode" data-group="lan" data-mode="heart"><span class="hg-led m-heart"></span>Heart</button>
         <button type="button" class="hg-mode" data-group="lan" data-mode="disko"><span class="hg-led m-disko"></span>Disko</button>
       </div>
-      <p class="hg-hint">Pola kedip LED LAN, aktif saat koneksi terdeteksi online.</p>
     </section>
 
+    <!-- pin 518 = LED indikator USB (di sebagian unit dipakai untuk kontrol kipas USB) -->
     <section class="hg-card">
-      <h2>LED Status</h2>
+      <h2>LED USB</h2>
       <div class="hg-modes" id="statusModes">
         <button type="button" class="hg-mode" data-group="status" data-mode="off"><span class="hg-led m-off"></span>Mati</button>
         <button type="button" class="hg-mode" data-group="status" data-mode="on"><span class="hg-led m-on"></span>Nyala</button>
         <button type="button" class="hg-mode" data-group="status" data-mode="heart"><span class="hg-led m-heart"></span>Detak</button>
         <button type="button" class="hg-mode" data-group="status" data-mode="disko"><span class="hg-led m-disko"></span>Disko</button>
       </div>
-      <p class="hg-hint">LED ketiga (pin default <b>518</b>) &mdash; LED tunggal, tidak ikut status koneksi. <b>Detak</b> = kedip pelan sebagai tanda service hidup (kalau LED diam, service bermasalah). <b>Nyala</b> = terang terus. <b>Mati</b> = pin tidak digerakkan sama sekali &mdash; pilih ini kalau di unitmu pin 518 ternyata bukan LED.</p>
+    </section>
+
+    <section class="hg-card">
+      <h2>LED Power</h2>
+      <div class="hg-modes" id="powerModes">
+        <button type="button" class="hg-mode" data-group="power" data-mode="offline"><span class="hg-led m-offline"></span>Offline</button>
+        <button type="button" class="hg-mode" data-group="power" data-mode="online"><span class="hg-led m-online"></span>Online</button>
+        <button type="button" class="hg-mode" data-group="power" data-mode="heart"><span class="hg-led m-heart"></span>Heart</button>
+        <button type="button" class="hg-mode" data-group="power" data-mode="disko"><span class="hg-led m-disko"></span>Disko</button>
+      </div>
     </section>
 
     <section class="hg-card">
@@ -126,7 +126,6 @@
         placeholder="graph.instagram.com">
       <div class="hg-chips-title">Target aktif (klik untuk hapus)</div>
       <div class="hg-chips" id="targetChips"></div>
-      <p class="hg-hint">Tulis target, pisahkan dengan spasi (maks 8; huruf/angka, titik, strip, garis bawah, titik dua). Tiap host tampil dengan status inline (dot + latensi), live.</p>
     </section>
 
     <section class="hg-card">
@@ -134,11 +133,22 @@
       <div class="hg-rangeval"><span id="intervalVal">5</span> <small>detik</small></div>
       <input class="hg-range" id="interval" type="range" min="1" max="60" step="1" value="5">
       <div class="hg-ticks" id="intervalTicks"></div>
-      <p class="hg-hint">Jeda antar pengecekan ping (1&ndash;60 detik). Makin kecil makin responsif, makin besar makin hemat resource. Angka di atas bisa diklik untuk lompat ke nilai itu.</p>
     </section>
   </div>
 
   <div class="hg-grid hg-grid-wide">
+    <section class="hg-card">
+      <h2>Service</h2>
+      <div class="hg-svcrow">
+        <div class="hg-pill" id="svcPill" title="Status service hg680pcls">
+          <span class="hg-dot"></span>
+          <span id="svcLabel">Service &mdash;</span>
+        </div>
+        <button class="cbi-button cbi-button-apply" id="svcBtn" type="button">Aktifkan</button>
+      </div>
+      <p class="hg-hint">Status: <b id="svcState">&mdash;</b></p>
+    </section>
+
     <section class="hg-card">
       <h2>Update</h2>
       <div class="hg-updrow">
@@ -156,7 +166,7 @@
       </div>
       <pre class="hg-notes hg-hide" id="verNotes"></pre>
       <pre class="hg-log hg-hide" id="updateLog"></pre>
-      <p class="hg-hint">Klik <b>Cek Update</b> untuk bandingkan versi terpasang dengan rilis terbaru di GitHub. Kalau ada versi baru, tombol <b>Install Update</b> muncul beserta catatan rilisnya. <b>Pasang ulang</b> memasang kembali rilis terbaru (untuk perbaikan, mis. LED/service bermasalah). Setelan &amp; target ping selalu dipertahankan.<br>Service: <b id="svcState">&mdash;</b> &middot; Syamsul Sarip Hidayat &middot; Boundless</p>
+      <p class="hg-hint">Syamsul Sarip Hidayat &middot; Boundless</p>
     </section>
   </div>
 
@@ -176,6 +186,7 @@ var STATUS_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls",
 var SAVE_URL   = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "save")%>";
 var CSRF_TOKEN = "<%=token%>";
 var CHECK_URL  = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "check")%>";
+var SERVICE_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "service")%>";
 var UPDATE_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "update")%>";
 
 var state = { power: "online", lan: "heart", status: "heart", targets: "", interval: 5 };
@@ -224,8 +235,25 @@ function apiSave(){
   });
 }
 
-function apiCheck(){
+function apiService(action){
   if (window.HG_MOCK) {
+    var st = window.HG_MOCK.status || {};
+    st.enabled = (action === "on");
+    st.service = (action === "on") ? "running" : "stopped";
+    window.HG_MOCK.status = st;
+    return new Promise(function(res){ setTimeout(function(){ res({ ok: true }); }, 400); });
+  }
+  var body = "token=" + encodeURIComponent(CSRF_TOKEN)
+    + "&action=" + encodeURIComponent(action);
+  return apiFetch(SERVICE_URL, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body
+  });
+}
+
+function apiCheck(){  if (window.HG_MOCK) {
     return Promise.resolve(window.HG_MOCK.check || { local: "dev", remote: "dev", update: false });
   }
   return apiFetch(CHECK_URL, { credentials: "same-origin" });
@@ -297,6 +325,26 @@ function renderTargetChips(){
   });
 }
 
+function renderService(d){
+  var enabled = !!d.enabled, running = d.service === "running";
+  var pill = $("svcPill"), label = $("svcLabel"), btn = $("svcBtn");
+  pill.classList.remove("on", "off");
+  if (enabled && running) {
+    pill.classList.add("on"); label.textContent = "Service aktif";
+  } else if (enabled) {
+    pill.classList.add("off"); label.textContent = "Aktif, tapi berhenti";
+  } else if (running) {
+    pill.classList.add("off"); label.textContent = "Jalan, autostart mati";
+  } else {
+    label.textContent = "Service nonaktif";
+  }
+  $("svcState").textContent = (running ? "sedang berjalan" : "sedang berhenti")
+    + (enabled ? ", otomatis saat boot" : ", tidak otomatis saat boot");
+  btn.textContent = enabled ? "Nonaktifkan" : "Aktifkan";
+  btn.className = "cbi-button" + (enabled ? "" : " cbi-button-apply");
+  btn.setAttribute("data-action", enabled ? "off" : "on");
+}
+
 function renderStatus(d){
   lastStatus = d;
   var pill = $("statusPill");
@@ -309,7 +357,7 @@ function renderStatus(d){
     $("statusText").textContent = "OFFLINE";
   }
   if (d.version) $("verLocal").textContent = d.version;
-  $("svcState").textContent = d.service === "running" ? "berjalan" : "berhenti";
+  renderService(d);
   renderTargetChips();
 }
 
@@ -406,7 +454,9 @@ $("saveBtn").addEventListener("click", function(){
   apiSave().then(function(r){
     if (r && r.ok) {
       dirty = false; $("dirtyNote").textContent = "";
-      toast("Tersimpan. Service di-restart.", "ok");
+      toast(lastStatus && lastStatus.enabled === false
+        ? "Tersimpan. Service sedang nonaktif, jadi tidak di-restart."
+        : "Tersimpan. Service di-restart.", "ok");
       setTimeout(refresh, 1200);
     } else {
       toast("Gagal: " + ((r && r.error) || "unknown"), "err");
@@ -415,6 +465,36 @@ $("saveBtn").addEventListener("click", function(){
     toast(e && e.message ? "Gagal: " + e.message : "Gagal menghubungi STB.", "err");
   }).finally(function(){
     btn.disabled = false; btn.textContent = "Simpan & Restart Service";
+  });
+});
+
+$("svcBtn").addEventListener("click", function(){
+  var btn = $("svcBtn");
+  var action = btn.getAttribute("data-action") || "on";
+  var msg = action === "off"
+    ? "Nonaktifkan service?\n\nPing dan kontrol LED berhenti, dan service tidak dijalankan otomatis saat STB dinyalakan. Setelan tetap tersimpan."
+    : "Aktifkan service sekarang dan otomatis saat STB dinyalakan?";
+  if (!window.confirm(msg)) { return; }
+
+  btn.disabled = true; btn.textContent = "Memproses...";
+  apiService(action).then(function(r){
+    if (r && r.ok) {
+      lastStatus = lastStatus || {};
+      lastStatus.enabled = (action === "on");
+      lastStatus.service = (action === "on") ? "running" : "stopped";
+      renderService(lastStatus);
+      toast(action === "off" ? "Service dinonaktifkan." : "Service diaktifkan.", "ok");
+      setTimeout(refresh, 700);
+    } else {
+      toast("Gagal: " + ((r && r.error) || "unknown"), "err");
+    }
+  }).catch(function(e){
+    toast(e && e.message ? "Gagal: " + e.message : "Gagal menghubungi STB.", "err");
+  }).finally(function(){
+    btn.disabled = false;
+    // pulihkan label dari status terakhir (juga untuk jalur gagal, jangan biarkan "Memproses...")
+    if (lastStatus) { renderService(lastStatus); }
+    else { btn.textContent = (btn.getAttribute("data-action") === "off") ? "Nonaktifkan" : "Aktifkan"; }
   });
 });
 

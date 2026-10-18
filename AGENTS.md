@@ -17,8 +17,8 @@ VERSION                                   # penanda versi, dipasang ke /usr/lib/
 install.sh / uninstall.sh                 # installer & uninstaller (dijalankan di STB sebagai root)
 etc/config/hg680pcls                      # default UCI: ping_targets, interval, power_mode, lan_mode
 etc/init.d/hg680pcls                      # service procd: loop ping + set mode LED
-usr/bin/hg680pcl                          # skrip GPIO LED (power/lan: offline|online|heart|disko; status: off|on|heart|disko)
-usr/lib/lua/luci/controller/hg680pcls.lua # route LuCI + endpoint status/save/check/update
+usr/bin/hg680pcl                          # skrip GPIO LED (power/lan: offline|online|heart|disko; status: off|on|heart|disko — pin 518 = LED USB)
+usr/lib/lua/luci/controller/hg680pcls.lua # route LuCI + endpoint status/save/service/check/update
 usr/lib/lua/luci/view/hg680pcls/dashboard.htm  # halaman dashboard (CSS inline + JS vanilla)
 CHANGELOG.md                              # riwayat rilis (sumber catatan "Cek Update")
 docs/api.md, docs/adr/                    # kontrak API & keputusan arsitektur
@@ -41,6 +41,9 @@ docs/api.md, docs/adr/                    # kontrak API & keputusan arsitektur
   - Setelah `kill`, tunggu proses benar-benar keluar (`wait_gone`) sebelum menulis nilai steady — trap
     proses lama me-reset pin dan bisa menimpa nilai baru (balapan).
   - Nomor pin dibaca dari UCI (`hg680pcls.settings.*_pin`) dengan fallback default di skrip.
+  - Baris penanda `# hg680pcls-service` di `etc/init.d/hg680pcls` **jangan dihapus** — dipakai
+    `service_running()` (controller) untuk cek service hidup sejak detik pertama, tanpa menunggu
+    proses LED power/lan muncul (baru jalan setelah cek ping pertama).
 - Lua: `module("luci.controller.hg680pcls", package.seeall)`; helper lokal dideklarasikan di atas
   sebelum dipakai; pola `local function x()` yang akan direferensikan dari fungsi lain harus berada di atas.
 - Template: semua variabel tampilan lewat `pcdata()`; JS ditulis ES5-ish (tanpa `const`/arrow) agar aman di

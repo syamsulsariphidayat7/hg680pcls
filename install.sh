@@ -58,6 +58,14 @@ rm -f /usr/lib/lua/luci/model/cbi/hg680pcls.lua
 echo "[HG680PCLS] Installing files..."
 mkdir -p /usr/lib/lua/luci/view/hg680pcls
 
+# Simpan keadaan service SEBELUM ditimpa, supaya pilihan user dihormati:
+# - fresh install (belum ada init script) -> selalu aktif
+# - reinstall/upgrade saat service sengaja dinonaktifkan -> tetap nonaktif
+SVC_FRESH=1
+[ -f /etc/init.d/hg680pcls ] && SVC_FRESH=0
+SVC_WAS_ENABLED=0
+ls /etc/rc.d/*hg680pcls >/dev/null 2>&1 && SVC_WAS_ENABLED=1
+
 # Simpan config lama agar setelan user tidak hilang saat upgrade
 if [ -f /etc/config/hg680pcls ]; then
     cp -f /etc/config/hg680pcls /etc/config/hg680pcls.bak
@@ -92,9 +100,14 @@ rm -rf /tmp/hg680p_led
 # Bersihkan cache menu LuCI agar perubahan langsung terlihat
 rm -f /tmp/luci-indexcache /tmp/luci-indexcache.* 2>/dev/null
 
-# Enable dan mulai service
-/etc/init.d/hg680pcls enable 2>/dev/null
-/etc/init.d/hg680pcls start 2>/dev/null
+# Enable dan mulai service — kecuali user memang menonaktifkannya sebelumnya
+if [ "$SVC_FRESH" -eq 1 ] || [ "$SVC_WAS_ENABLED" -eq 1 ]; then
+    /etc/init.d/hg680pcls enable 2>/dev/null
+    /etc/init.d/hg680pcls start 2>/dev/null
+else
+    /etc/init.d/hg680pcls disable 2>/dev/null
+    echo "[HG680PCLS] Service tetap NONAKTIF (sesuai setelan sebelumnya) — aktifkan dari dashboard bila perlu."
+fi
 
 # Bersihkan
 cd /tmp

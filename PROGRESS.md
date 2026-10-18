@@ -4,18 +4,26 @@ Ringkas — update tiap akhir sesi.
 
 **Tanggal terakhir diperbarui:** 2026-10-18
 **Fase:** Maintenance / fitur (setelah Development + Deployment)
-**Versi:** 1.3.0
+**Versi:** 1.4.0
 
 ## Sedang dikerjakan (sesi ini)
-- [x] **LED ketiga (pin 518)** → kartu **LED Status** di dashboard: mode `Mati` / `Nyala` / `Detak` (heartbeat, default) / `Disko`.
-      LED ini tidak ikut status koneksi (independen), jadi bisa dipakai sebagai heartbeat service.
-- [x] Nomor pin LED bisa dioverride lewat UCI (`power_pin_on/off`, `lan_pin_on/off`, `status_pin`) dengan fallback default.
-- [x] Perbaikan 3 bug pada `usr/bin/hg680pcl` yang ditemukan saat uji lokal:
-      `stop_mode` tidak menemukan PID file (local multi-assign), proses latar menahan stdout pemanggil,
-      dan balapan trap vs mode steady (`wait_gone`).
-- [x] `VERSION` → 1.3.0, entri `CHANGELOG.md`, `docs/api.md` (bentuk respons `/status` diperbarui), `README.md`, `AGENTS.md`.
-- [ ] Commit + push + tag `v1.3.0` — **menunggu izin user**.
-- [ ] Uji di STB: apakah pin 518 benar LED (bukan IR/USB reset), mode `Detak`, overrides UCI.
+- [x] **Kontrol service: Aktifkan / Nonaktifkan** — kartu **Service** (baris kedua, sebelum Update) dengan pill status
+      (berjalan/berhenti + autostart) dan satu tombol sakelar.
+- [x] Endpoint baru `POST /service` (`action=on|off`) — wajib POST + token CSRF (pakai `require_post()`),
+      memanggil `/etc/init.d/hg680pcls {enable,start} | {stop,disable}`.
+- [x] `/status` menambah field `enabled` (cek symlink `/etc/rc.d/*hg680pcls`).
+- [x] `service_running()` kini juga mendeteksi penanda `# hg680pcls-service` di cmdline shell service,
+      jadi indikator "berjalan" akurat sejak `Aktifkan` (LED power/lan baru muncul setelah ping pertama).
+- [x] `POST /save` tidak lagi me-restart (menghidupkan) service yang sengaja dinonaktifkan.
+- [x] `install.sh` menghormati pilihan user: reinstall/upgrade mempertahankan keadaan nonaktif,
+      fresh install tetap langsung aktif.
+- [x] Dashboard dirapikan: kartu **LED Status → LED USB** (pin 518 = LED indikator USB — di sebagian
+      unit dipakai untuk kendali kipas USB), urutan kartu LED jadi **LED LAN → LED USB → LED Power**,
+      dan deskripsi panjang dihapus (kartu Service menyisakan status hidup, kartu Update kredit;
+      label "Target aktif (klik untuk hapus)" tetap).
+- [ ] Commit + push + tag `v1.4.0` — **menunggu izin user**.
+- [ ] Uji di STB: tombol Nonaktifkan (LED mati + tidak ada proses), Aktifkan, setelah reboot,
+      plus urutan/penamaan kartu baru (LED LAN → LED USB → LED Power) dan kartu Service.
 
 ## Sudah selesai (rilis sebelumnya)
 - v1.2.4 — tombol **Pasang ulang** di kartu Update + skala slider interval (angka 5…60 bisa diklik).
@@ -40,8 +48,8 @@ Ringkas — update tiap akhir sesi.
 - **Tidak bisa render-test LuCI dari host dev** (LuCI tidak terpasang di sini). Verifikasi visual
   harus dilakukan di STB setelah install.
 - Endpoint `/check` memakai GitHub API (rate limit 60 req/jam per IP) — sudah ada fallback ke `main`.
-- Pin 518 **belum dikonfirmasi** sebagai LED di unit user. Kalau ternyata bukan LED, set mode **Mati**
-  (atau ganti `status_pin` / lewati) — tidak perlu edit skrip.
+- Pin 518 = **LED indikator USB** (dikonfirmasi user), bukan LED status generik. Mode **Mati** menulis
+  `0` ke pin (LED padam) — pakai itu bila di unit lain pin ini ternyata bukan LED.
 
 ## Verifikasi yang sudah dijalankan
 - `luac -p` controller → OK
@@ -53,4 +61,4 @@ Ringkas — update tiap akhir sesi.
 - CI GitHub Actions (shellcheck + luac -p + sh -n + node --check).
 - Histori uptime & tombol Restart Service.
 - Rollback update dari dashboard.
-- Mode LED `heart`/`disko` untuk power/LAN sudah ada; mode `nyala tetap` (`on`) masih hanya untuk LED status.
+- Mode LED `heart`/`disko` untuk power/LAN sudah ada; mode `nyala tetap` (`on`) masih hanya untuk LED USB (pin 518).

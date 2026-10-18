@@ -9,6 +9,9 @@ LED_SCRIPT="/usr/bin/hg680pcl"
 start_service() {
     procd_open_instance
     procd_set_param command /bin/sh -c "
+        # hg680pcls-service
+        # (baris di atas penanda di cmdline: dipakai controller untuk cek service hidup —
+        #  jangan dihapus; lihat service_running() di controller/hg680pcls.lua)
         trap '$LED_SCRIPT reset 2>/dev/null; exit 0' TERM INT EXIT
         ping_targets=\$(uci get hg680pcls.settings.ping_targets 2>/dev/null || echo 'graph.instagram.com')
         interval=\$(uci get hg680pcls.settings.interval 2>/dev/null || echo 5)
@@ -16,7 +19,7 @@ start_service() {
         lan_mode=\$(uci get hg680pcls.settings.lan_mode 2>/dev/null || echo 'heart')
         status_mode=\$(uci -q get hg680pcls.settings.status_mode 2>/dev/null)
         [ -n \"\$status_mode\" ] || status_mode='heart'
-        # LED status (tunggal) digerakkan sekali di awal; tidak ikut status koneksi
+        # LED USB (pin 518 = LED indikator USB) digerakkan sekali di awal; tidak ikut status koneksi
         $LED_SCRIPT status \$status_mode
         state=''
         while true; do

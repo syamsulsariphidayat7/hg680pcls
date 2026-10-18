@@ -4,6 +4,24 @@ Semua perubahan penting proyek ini didokumentasikan di sini.
 Versi mengikuti `MAJOR.MINOR.PATCH`, dan **setiap rilis diberi tag `v<versi>`** di GitHub
 (tag inilah yang dipakai installer & tombol Update — bukan branch `main`).
 
+## 1.4.0 (2026-10-18)
+- **Kontrol service: Aktifkan / Nonaktifkan** — kartu **Service** baru di dashboard dengan status
+  langsung (berjalan/berhenti + autostart) dan satu tombol sakelar.
+  **Nonaktifkan** = service dihentikan sekarang (ping berhenti, semua LED dimatikan) sekaligus
+  mematikan autostart; **Aktifkan** = dijalankan sekarang + autostart aktif. Setelan tetap tersimpan.
+- Endpoint baru `POST /service` (`action=on|off`) — wajib POST + token CSRF, sama seperti `save`/`update`.
+- `/status` kini menyertakan `enabled` (keadaan autostart service).
+- **Simpan & Restart** tidak lagi menghidupkan service yang sengaja dinonaktifkan.
+- Installer menghormati pilihan itu: reinstall/upgrade saat service nonaktif akan tetap nonaktif
+  (fresh install tetap langsung aktif seperti sebelumnya).
+- Kartu **LED Status** → **LED USB**: pin 518 ternyata **LED indikator USB**, bukan LED status
+  generik. Mode & default tidak berubah. Di sebagian unit pin ini dipakai untuk mengendalikan kipas
+  USB — untuk itu pakai **Nyala**/**Mati** (pola Detak/Disko hanya cocok untuk LED).
+- Dashboard dirapikan: urutan kartu LED kini **LED LAN → LED USB → LED Power**, dan semua teks
+  keterangan panjang dihapus — kartu mode/input sudah jelas dari label & preview, kartu Service
+  menyisakan baris status hidup, kartu Update menyisakan kredit. Label
+  "Target aktif (klik untuk hapus)" tetap ada.
+
 ## 1.3.0 (2026-10-18)
 - **LED ketiga (pin 518)** — kartu baru **LED Status**: LED tunggal yang tidak ikut status koneksi.
   Mode: **Mati** (pin tidak digerakkan), **Nyala** (terang terus), **Detak** (heartbeat, default),

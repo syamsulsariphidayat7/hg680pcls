@@ -12,12 +12,14 @@ function index()
         post("action_save")).leaf = true
     entry({"admin", "services", "hg680pcls", "check"},
         call("action_check")).leaf = true
+    entry({"admin", "services", "hg680pcls", "service"},
+        post("action_service")).leaf = true
     entry({"admin", "services", "hg680pcls", "update"},
         post("action_update")).leaf = true
 end
 
 local MODES = { offline = true, online = true, heart = true, disko = true }
--- LED ketiga (tunggal) tidak punya offline/online karena hanya satu pin.
+-- LED USB (pin 518 = LED indikator USB, tunggal) tidak punya offline/online karena hanya satu pin.
 local STATUS_MODES = { off = true, on = true, heart = true, disko = true }
 
 local MAX_TARGETS = 8
@@ -174,8 +176,18 @@ local function ping_check_all(hosts)
 end
 
 local function service_running()
+    -- Baris penanda '# hg680pcls-service' ada di cmdline shell service (lihat init.d), jadi
+    -- status "berjalan" akurat sejak service dimulai — tidak menunggu proses LED muncul
+    -- (LED power/lan baru dijalankan setelah pengecekan ping pertama selesai).
+    -- Fallback: masih ada proses pola LED yang hidup.
     return luci.sys.call(
-        "pgrep -f '/usr/bin/hg680pcl' >/dev/null 2>&1") == 0
+        "pgrep -f 'hg680pcls-service' >/dev/null 2>&1 "
+        .. "|| pgrep -f '/usr/bin/hg680pcl' >/dev/null 2>&1") == 0
+end
+
+-- Service aktif saat boot? rc.common membuat symlink /etc/rc.d/S<nn><nama>.
+local function service_enabled()
+    return luci.sys.call("ls /etc/rc.d/*hg680pcls >/dev/null 2>&1") == 0
 end
 
 function action_status()
@@ -197,6 +209,7 @@ function action_status()
     luci.http.write(luci.jsonc.stringify({
         online  = online,
         service = service_running() and "running" or "stopped",
+        enabled = service_enabled(),
         version = local_version(),
         config  = cfg,
         targets = targets,
@@ -253,10 +266,51 @@ function action_save()
     uci:set("hg680pcls", "settings", "ping_targets", ping_targets)
     uci:commit("hg680pcls")
 
-    luci.sys.call("/etc/init.d/hg680pcls restart >/dev/null 2>&1 &")
+    -- Restart hanya bila service memang aktif — jangan menghidupkan yang sengaja dinonaktifkan
+    if service_enabled() or service_running() then
+        luci.sys.call("/etc/init.d/hg680pcls restart >/dev/null 2>&1 &")
+    end
 
     http.prepare_content("application/json")
     http.write(luci.jsonc.stringify({ ok = true }))
+end
+
+-- ===================== Service on/off =====================
+
+-- action=on  -> enable autostart + start sekarang
+-- action=off -> stop sekarang + disable autostart (LED dimatikan oleh reset service)
+function action_service()
+    if not require_post() then
+        return
+    end
+
+    local http = luci.http
+    local action = http.formvalue("action")
+
+    local function bad(msg)
+        http.status(400, "Bad Request")
+        http.prepare_content("application/json")
+        http.write(luci.jsonc.stringify({ ok = false, error = msg }))
+    end
+
+    if action ~= "on" and action ~= "off" then
+        return bad("action tidak valid")
+    end
+
+    if action == "on" then
+        luci.sys.call("/etc/init.d/hg680pcls enable >/dev/null 2>&1")
+        luci.sys.call("/etc/init.d/hg680pcls start >/dev/null 2>&1")
+    else
+        luci.sys.call("/etc/init.d/hg680pcls stop >/dev/null 2>&1")
+        luci.sys.call("/etc/init.d/hg680pcls disable >/dev/null 2>&1")
+    end
+
+    http.prepare_content("application/json")
+    http.write(luci.jsonc.stringify({
+        ok      = true,
+        running = service_running(),
+        enabled = service_enabled(),
+    }))
 end
 
 -- ===================== Update dari GitHub =====================

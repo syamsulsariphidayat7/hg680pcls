@@ -3,7 +3,9 @@ config hg680pcls 'settings'
     option interval '5'
     option power_mode 'online'
     option lan_mode 'heart'
-    # LED ketiga (tunggal, mis. LED IR): off | on | heart | disko
+    # LED USB (pin 518 = LED indikator USB, tunggal): off | on | heart | disko
+    # Di sebagian unit, pin ini justru dipakai untuk mengendalikan kipas USB
+    # (pilih Nyala/Mati; JANGAN Detak/Disko untuk kipas).
     option status_mode 'heart'
     option status_pin '518'
     # Nomor pin lain bisa dioverride bila board revisinya beda, contoh:

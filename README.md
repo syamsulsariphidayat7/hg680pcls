@@ -40,10 +40,11 @@ Setelah instalasi, buka:
 Dashboard berisi:
 - 🟢 **Status koneksi** — cukup di **pill pojok kanan atas** (ONLINE/OFFLINE, auto-refresh tiap 5 detik)
 - 💡 **Mode LED Power & LAN** — kartu visual dengan preview animasi pola kedip (Offline / Online / Heart / Disko)
-- 🔵 **LED Status** (pin default `518`) — LED ketiga yang berdiri sendiri, tidak ikut status koneksi. Mode: **Mati**, **Nyala**, **Detak** (heartbeat, default), **Disko**. Pakai **Mati** kalau di unitmu pin ini bukan LED.
+- 🔵 **LED USB** (pin default `518`) — LED indikator USB (di sebagian unit justru dipakai untuk mengendalikan kipas USB), tidak ikut status koneksi. Mode: **Mati**, **Nyala**, **Detak** (heartbeat, default), **Disko**.
 - 🎯 **Ping target** — input multi target; tiap host tampil sebagai chip dengan **status inline** (dot + latensi, live). Klik chip untuk hapus.
 - ⏱️ **Interval cek** — slider 1–60 detik dengan tanda skala **5, 10, 15, … 60** (angkanya bisa diklik untuk lompat ke nilai itu)
-- 🔄 **Update** (baris sendiri) — tombol **Cek Update**; kalau ada versi baru, tombol **Install Update** muncul beserta **catatan rilis**, plus **Pasang ulang** (memasang kembali rilis terbaru untuk perbaikan) dan tombol **Repo GitHub** (setelan dipertahankan)
+- 🔌 **Service** (baris kedua) — status service + tombol **Aktifkan / Nonaktifkan**: nonaktif berarti ping & semua LED berhenti dan tidak otomatis jalan saat STB dinyalakan (setelan tetap tersimpan)
+- 🔄 **Update** (baris kedua) — tombol **Cek Update**; kalau ada versi baru, tombol **Install Update** muncul beserta **catatan rilis**, plus **Pasang ulang** (memasang kembali rilis terbaru untuk perbaikan) dan tombol **Repo GitHub** (setelan dipertahankan)
 - 💾 **Simpan & Restart Service** — tombol bergaya LuCI, langsung apply ke `/etc/config/hg680pcls` dan restart service
 
 Jika belum muncul LOGOUT dulu atau:
@@ -61,7 +62,7 @@ strip, garis bawah, dan titik dua (nama host atau IP). Target yang tidak valid d
 
 ## 🔧 Nomor pin GPIO (opsional)
 
-Default sudah cocok untuk HG680P "2GB" (pin power 521/517, LAN 547/548, LED status 518).
+Default sudah cocok untuk HG680P "2GB" (pin power 521/517, LAN 547/548, LED USB 518).
 Kalau board revisimu beda, override lewat UCI tanpa perlu edit skrip:
 
 ```bash
@@ -73,14 +74,17 @@ uci set hg680pcls.settings.status_pin='518'
 uci commit hg680pcls && /etc/init.d/hg680pcls restart
 ```
 
-Cara memastikan sebuah pin memang LED (dan bukan penerima IR atau USB reset):
+Cara memastikan sebuah pin memang LED (dan bukan penerima IR atau tombol reset USB) — contoh dengan
+pin 518, yang di unit HG680P kami terdeteksi sebagai **LED indikator USB** (di sebagian unit, pin ini
+dipakai orang untuk mengendalikan kipas USB; pilih mode **Nyala**/**Mati**, pola **Detak**/**Disko**
+tidak cocok untuk kipas):
 
 ```bash
 echo 518 > /sys/class/gpio/export
 echo out > /sys/class/gpio/gpio518/direction
 while true; do echo 1 > /sys/class/gpio/gpio518/value; sleep 0.3
               echo 0 > /sys/class/gpio/gpio518/value; sleep 0.3; done
-# amati: LED mana yang berkedip? remote masih jalan? USB tidak terputus?
+# amati: LED mana yang berkedip? remote masih jalan? perangkat USB tidak terputus?
 # Ctrl+C lalu: echo 518 > /sys/class/gpio/unexport
 ```
 
