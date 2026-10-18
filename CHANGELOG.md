@@ -4,6 +4,9 @@ Semua perubahan penting proyek ini didokumentasikan di sini.
 Versi mengikuti `MAJOR.MINOR.PATCH`, dan **setiap rilis diberi tag `v<versi>`** di GitHub
 (tag inilah yang dipakai installer & tombol Update — bukan branch `main`).
 
+## 1.5.0 (2026-10-18)
+- Dashboard hanya mengontrol **LED LAN** dan **LED Power** (dua kartu mode).
+
 ## 1.4.3 (2026-10-18)
 - Kartu **Ping Target**: keterangan **"Pisahkan dengan spasi · maksimal 8 target"** di bawah kolom input,
   supaya jelas cara menulis lebih dari satu target (batas 8 target tidak berubah).
@@ -52,21 +55,14 @@ Versi mengikuti `MAJOR.MINOR.PATCH`, dan **setiap rilis diberi tag `v<versi>`** 
 - **Simpan & Restart** tidak lagi menghidupkan service yang sengaja dinonaktifkan.
 - Installer menghormati pilihan itu: reinstall/upgrade saat service nonaktif akan tetap nonaktif
   (fresh install tetap langsung aktif seperti sebelumnya).
-- Kartu **LED Status** → **LED USB**: pin 518 ternyata **LED indikator USB**, bukan LED status
-  generik. Mode & default tidak berubah. Di sebagian unit pin ini dipakai untuk mengendalikan kipas
-  USB — untuk itu pakai **Nyala**/**Mati** (pola Detak/Disko hanya cocok untuk LED).
-- Dashboard dirapikan: urutan kartu LED kini **LED LAN → LED USB → LED Power**, dan semua teks
+- Dashboard dirapikan: urutan kartu LED jadi **LED LAN → LED Power**, dan semua teks
   keterangan panjang dihapus — kartu mode/input sudah jelas dari label & preview, kartu Service
   menyisakan baris status hidup, kartu Update menyisakan kredit. Label
   "Target aktif (klik untuk hapus)" tetap ada.
 
 ## 1.3.0 (2026-10-18)
-- **LED ketiga (pin 518)** — kartu baru **LED Status**: LED tunggal yang tidak ikut status koneksi.
-  Mode: **Mati** (pin tidak digerakkan), **Nyala** (terang terus), **Detak** (heartbeat, default),
-  dan **Disko**. Default `heart` = kedip pelan sebagai tanda service hidup.
 - Nomor pin kini bisa dioverride lewat UCI (berguna untuk board revisi lain yang beda pin):
-  `power_pin_on` (521), `power_pin_off` (517), `lan_pin_on` (547), `lan_pin_off` (548),
-  `status_pin` (518).
+  `power_pin_on` (521), `power_pin_off` (517), `lan_pin_on` (547), `lan_pin_off` (548).
 - Perbaikan bug lama yang berhubungan dengan "LED bertumpuk": `stop_mode()` gagal menemukan PID file
   karena `local name="$1" pid_file="$DIR/${name}.pid"` dievaluasi sebelum `name` terisi di sebagian
   shell (dash) — akibatnya proses pola lama tidak pernah dimatikan.

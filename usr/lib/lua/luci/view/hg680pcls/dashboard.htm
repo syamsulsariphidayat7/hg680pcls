@@ -37,8 +37,6 @@
 .hg-led.m-online{animation:hg-green 1s infinite}
 .hg-led.m-heart{animation:hg-heart 1.2s infinite}
 .hg-led.m-disko{animation:hg-disko .45s infinite}
-.hg-led.m-off{background:#2b3038}
-.hg-led.m-on{background:#38bdf8;box-shadow:0 0 12px #7dd3fc}
 @keyframes hg-red{0%,100%{background:#3a1111;box-shadow:none}50%{background:var(--hg-red);box-shadow:0 0 12px var(--hg-red)}}
 @keyframes hg-green{0%,100%{background:#123322;box-shadow:none}50%{background:var(--hg-green);box-shadow:0 0 12px var(--hg-green)}}
 @keyframes hg-heart{0%,100%{background:#3a1111;box-shadow:none}30%{background:var(--hg-amber);box-shadow:0 0 10px var(--hg-amber)}60%{background:var(--hg-green);box-shadow:0 0 12px var(--hg-green)}}
@@ -106,17 +104,6 @@
         <button type="button" class="hg-mode" data-group="lan" data-mode="online"><span class="hg-led m-online"></span>Online</button>
         <button type="button" class="hg-mode" data-group="lan" data-mode="heart"><span class="hg-led m-heart"></span>Heart</button>
         <button type="button" class="hg-mode" data-group="lan" data-mode="disko"><span class="hg-led m-disko"></span>Disko</button>
-      </div>
-    </section>
-
-    <!-- pin 518 = LED indikator USB (di sebagian unit dipakai untuk kontrol kipas USB) -->
-    <section class="hg-card">
-      <h2>LED USB</h2>
-      <div class="hg-modes" id="statusModes">
-        <button type="button" class="hg-mode" data-group="status" data-mode="off"><span class="hg-led m-off"></span>Mati</button>
-        <button type="button" class="hg-mode" data-group="status" data-mode="on"><span class="hg-led m-on"></span>Nyala</button>
-        <button type="button" class="hg-mode" data-group="status" data-mode="heart"><span class="hg-led m-heart"></span>Detak</button>
-        <button type="button" class="hg-mode" data-group="status" data-mode="disko"><span class="hg-led m-disko"></span>Disko</button>
       </div>
     </section>
 
@@ -212,7 +199,7 @@ var SERVICE_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls"
 var UPDATE_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "update")%>";
 var UPDATELOG_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "updatelog")%>";
 
-var state = { power: "online", lan: "heart", status: "heart", targets: "", interval: 5 };
+var state = { power: "online", lan: "heart", targets: "", interval: 5 };
 var firstLoad = true;
 var dirty = false;
 var lastStatus = null;
@@ -259,7 +246,6 @@ function apiSave(){
   var body = "token=" + encodeURIComponent(CSRF_TOKEN)
     + "&power_mode=" + encodeURIComponent(state.power)
     + "&lan_mode=" + encodeURIComponent(state.lan)
-    + "&status_mode=" + encodeURIComponent(state.status)
     + "&interval=" + encodeURIComponent(state.interval)
     + "&ping_targets=" + encodeURIComponent(state.targets);
   return apiFetch(SAVE_URL, {
@@ -407,12 +393,10 @@ function renderStatus(d){
 
 function fillForm(cfg){
   state.power = cfg.power_mode; state.lan = cfg.lan_mode;
-  state.status = cfg.status_mode || "heart";
   state.targets = cfg.ping_targets;
   state.interval = Math.min(60, Math.max(1, parseInt(cfg.interval, 10) || 5));
   setActiveMode("power", state.power);
   setActiveMode("lan", state.lan);
-  setActiveMode("status", state.status);
   $("pingTargets").value = state.targets;
   $("interval").value = state.interval;
   $("intervalVal").textContent = state.interval;

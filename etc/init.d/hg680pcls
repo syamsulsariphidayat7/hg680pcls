@@ -17,10 +17,6 @@ start_service() {
         interval=\$(uci get hg680pcls.settings.interval 2>/dev/null || echo 5)
         power_mode=\$(uci get hg680pcls.settings.power_mode 2>/dev/null || echo 'online')
         lan_mode=\$(uci get hg680pcls.settings.lan_mode 2>/dev/null || echo 'heart')
-        status_mode=\$(uci -q get hg680pcls.settings.status_mode 2>/dev/null)
-        [ -n \"\$status_mode\" ] || status_mode='heart'
-        # LED USB (pin 518 = LED indikator USB) digerakkan sekali di awal; tidak ikut status koneksi
-        $LED_SCRIPT status \$status_mode
         state=''
         while true; do
             reachable=0
