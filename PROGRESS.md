@@ -12,7 +12,10 @@ Ringkas — update tiap akhir sesi.
       supaya jelas cara menulis lebih dari satu target. Batas 8 target tidak berubah.
 - [x] Verifikasi: `luac -p`, `sh -n`, `node --check` + smoke test DOM **97/97** (3 cek baru: hint ada di
       dalam kartu Ping Target, posisinya antara kolom input dan judul chip, serta menyebut "spasi" & "8 target").
-- [x] Commit + push + tag **v1.4.3**.
+- [x] Commit + push + tag **v1.4.3** (`d6d60b7`, tag `v1.4.3` sudah di-push & terverifikasi lewat GitHub API:
+      `/tags` mengembalikan 1.4.3 teratas, `VERSION` = 1.4.3, heading pertama `CHANGELOG` = 1.4.3,
+      teks hint ada di `dashboard.htm` pada tag dan berada sebelum judul chip, controller di tag masih
+      memuat `action_updatelog` + `setsid` (fitur 1.4.2 utuh), `VERSION` di `main` = 1.4.3).
 - [ ] Uji di STB (cukup sekali install **v1.4.3**, sudah mencakup v1.4.0–v1.4.2 sekaligus):
       urutan kartu & dua grup PENGATURAN/SISTEM, baris Service rapat kiri, keterangan pemisah target,
       panel catatan/log, tombol Nonaktifkan/Aktifkan, **Cek Update → Install Update dengan log mengalir**,
