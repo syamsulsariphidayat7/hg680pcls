@@ -152,7 +152,7 @@ bila service memang aktif). Installer juga mempertahankan keadaan nonaktif saat 
 
 ## `POST /update` — **POST+token**
 
-Jalankan installer resmi dari ref rilis, sebagai root.
+Jalankan installer resmi dari ref rilis, sebagai root — dijalankan **di latar belakang** (detached).
 
 Dipicu oleh dua tombol di dashboard:
 - **Install Update** (muncul hanya bila ada versi lebih baru),
@@ -160,40 +160,81 @@ Dipicu oleh dua tombol di dashboard:
 
 Keduanya memanggil endpoint ini tanpa parameter tambahan; ref selalu rilis terbaru.
 
-1. Resolve ref = tag `v<versi>` tertinggi (`remote_version()`), fallback `main`.
-2. `curl` `install.sh` dari ref tersebut lalu jalankan (`sh -c`), output ke `/tmp/hg680pcls-update.log`.
-3. Installer mempertahankan `/etc/config/hg680pcls`, backup ke `/etc/config/hg680pcls.bak`,
+1. Tolak dulu (409) bila masih ada pemasangan lain yang hidup.
+2. Resolve ref = tag `v<versi>` tertinggi (`remote_version()`), fallback `main`.
+3. Bersihkan sisa file pemasangan sebelumnya.
+4. Lepas skrip installer ke latar belakang (`sh -c … &`, stdin `/dev/null`, stdout/stderr ke log).
+   Skrip itu sendiri: menulis PID-nya, `curl` `install.sh` dari ref tersebut ke
+   `/tmp/hg680pcls-install.sh`, menjalankannya, lalu menulis exit code.
+5. Installer mempertahankan `/etc/config/hg680pcls` (backup ke `/etc/config/hg680pcls.bak`),
    memasang file, dan restart service.
 
 **Body:** `token=<csrf token>` (`application/x-www-form-urlencoded`)
+
+**Response 200** (cepat — installer baru saja dilepas, belum selesai)
+
+```json
+{ "ok": true, "started": true, "ref": "v1.4.2", "local": "1.4.1" }
+```
+
+| Field | Keterangan |
+|---|---|
+| `started` | `true` bila installer berhasil dilepas ke latar belakang |
+| `ref` | ref yang dipakai (`v1.4.2` atau `main`) |
+| `local` | versi terpasang **saat ini** (versi baru baru terlihat di `/updatelog` setelah selesai) |
+
+**Response 409** (masih ada pemasangan berjalan)
+
+```json
+{ "ok": false, "error": "instalasi sedang berjalan" }
+```
+
+**Response 403 / 405** — sama seperti `/save`.
+
+---
+
+## `GET /updatelog`
+
+Kemajuan pemasangan, dipantau dashboard tiap ~1,5 detik selama installer berjalan (dan sekali saat
+halaman dimuat, untuk melanjutkan pemantauan bila halaman di-refresh di tengah pemasangan).
 
 **Response 200**
 
 ```json
 {
   "ok": true,
-  "code": 0,
-  "ref": "v1.3.0",
-  "local": "1.3.0",
-  "log": "[HG680PCLS] Ref dipakai: v1.3.0\n…"
+  "running": true,
+  "done": false,
+  "code": null,
+  "local": "1.4.1",
+  "log": "[HG680PCLS] Ref dipakai: v1.4.2\n→ Downloading VERSION\n…"
 }
 ```
 
 | Field | Keterangan |
 |---|---|
-| `ok` | `true` bila exit code installer `0` |
-| `code` | exit code installer |
-| `ref` | ref yang dipakai (`v1.2.3` atau `main`) |
-| `local` | versi terpasang **setelah** installer selesai |
-| `log` | 4000 karakter terakhir `/tmp/hg680pcls-update.log` |
+| `running` | `true` bila proses installer (PID di `/tmp/hg680pcls-update.pid`) masih hidup |
+| `done` | `true` bila exit code sudah ditulis (`/tmp/hg680pcls-update.rc`) — pemasangan selesai |
+| `code` | exit code installer (`0` sukses); kosong selama pemasangan berjalan |
+| `local` | versi terpasang saat ini (setelah sukses berisi versi baru) |
+| `log` | 4000 karakter terakhir `/tmp/hg680pcls-update.log` (diganti utuh tiap poll, bukan tambahan) |
 
-**Response 403 / 405** — sama seperti `/save`.
+Cara membaca keadaan:
+
+| `running` | `done` | Arti |
+|---|---|---|
+| `true` | `false` | installer sedang jalan |
+| `false` | `true` | selesai — cek `code` (`0` sukses) |
+| `false` | `false` | belum pernah dijalankan, atau installer mati sebelum menulis exit code (dashboard memberi tenggang ~15 detik lalu melaporkan "installer tidak berjalan") |
+
+**Response 403** — sesi LuCI tidak valid (endpoint hanya untuk sesi admin).
 
 ---
 
 ## Keamanan (ringkas)
 - `save` & `update` = **POST + token CSRF** (dua lapis: dispatcher LuCI + `require_post()`).
 - `service` (`action=on|off`) = **POST + token CSRF**, memakai helper yang sama.
-- `status` & `check` = GET, read-only.
-- `/update` menjalankan installer sebagai **root** — hanya bisa dipicu dari sesi admin LuCI
-  yang login (token CSRF + ACL `luci`).
+- `status`, `check`, & `updatelog` = GET, read-only.
+- `/update` menjalankan installer sebagai **root** (detached) — hanya bisa dipicu dari sesi admin LuCI
+  yang login (token CSRF + ACL `luci`), dan maksimal satu pemasangan pada satu waktu.
+- `/updatelog` hanya membaca berkas log/PID/exit-code di `/tmp` — tidak menerima input apa pun.

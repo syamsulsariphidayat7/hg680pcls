@@ -16,6 +16,9 @@ function index()
         post("action_service")).leaf = true
     entry({"admin", "services", "hg680pcls", "update"},
         post("action_update")).leaf = true
+    -- GET read-only: dipantau dashboard selama pemasangan update berjalan.
+    entry({"admin", "services", "hg680pcls", "updatelog"},
+        call("action_updatelog")).leaf = true
 end
 
 local MODES = { offline = true, online = true, heart = true, disko = true }
@@ -88,6 +91,14 @@ local function read_tail(path, max)
     local data = f:read("*a") or ""
     f:close()
     return data
+end
+
+local function read_trim(path)
+    local s = read_file(path)
+    if not s then return nil end
+    s = s:gsub("%s+", "")
+    if s == "" then return nil end
+    return s
 end
 
 local function local_version()
@@ -315,6 +326,51 @@ end
 
 -- ===================== Update dari GitHub =====================
 
+-- Pemasangan dijalankan detached (latar belakang) supaya request LuCI tidak
+-- menggantung 30-90 detik; dashboard memantau kemajuannya lewat GET /updatelog.
+local UPDATE_LOG    = "/tmp/hg680pcls-update.log"
+local UPDATE_RC     = "/tmp/hg680pcls-update.rc"
+local UPDATE_PID    = "/tmp/hg680pcls-update.pid"
+local UPDATE_SCRIPT = "/tmp/hg680pcls-install.sh"
+
+-- Installer masih hidup? Penanda "selesai" = file rc sudah ditulis oleh wrapper.
+local function installer_running()
+    if read_trim(UPDATE_RC) then return false end
+    local pid = read_trim(UPDATE_PID)
+    if pid and pid:match("^%d+$") and nixio.fs.access("/proc/" .. pid) then
+        return true
+    end
+    return false
+end
+
+-- Skrip wrapper: menulis pid sendiri, mengunduh installer ke file (supaya exit
+-- code curl tidak tertukar dengan exit code installer), lalu menulis exit code.
+local function installer_script(ref)
+    return string.format([[
+echo $$ > %s
+if curl -fsSL --connect-timeout 10 --max-time 90 %s/%s/install.sh -o %s; then
+    sh %s
+    echo $? > %s
+else
+    echo "[HG680PCLS] Gagal mengunduh installer dari GitHub"
+    echo 1 > %s
+fi
+rm -f %s]],
+        UPDATE_PID, REPO_RAW, ref, UPDATE_SCRIPT,
+        UPDATE_SCRIPT, UPDATE_RC,
+        UPDATE_RC, UPDATE_PID)
+end
+
+-- Detach dari sesi proses LuCI bila `setsid` tersedia, supaya installer tidak ikut
+-- dimatikan saat request selesai. PID tetap akurat: wrapper menulis `$$`-nya sendiri,
+-- jadi aman meski `setsid` mem-fork sebelum menjalankan shell.
+local function detach_prefix()
+    if luci.sys.call("command -v setsid >/dev/null 2>&1") == 0 then
+        return "setsid "
+    end
+    return ""
+end
+
 function action_check()
     local lv = local_version()
     local rv, ref = remote_version()
@@ -337,22 +393,53 @@ function action_update()
     local http = luci.http
     http.prepare_content("application/json")
 
+    local function conflict(msg)
+        http.status(409, "Conflict")
+        http.write(luci.jsonc.stringify({ ok = false, error = msg }))
+    end
+
+    -- Satu pemasangan pada satu waktu.
+    if installer_running() then
+        return conflict("instalasi sedang berjalan")
+    end
+
     -- Ambil installer dari ref rilis terbaru (fallback: main) supaya isi
     -- yang dipasang konsisten dengan versi yang diumumkan.
     local _, ref = remote_version()
     if not ref or ref == "" then ref = "main" end
 
-    local logfile = "/tmp/hg680pcls-update.log"
-    local cmd = string.format(
-        "sh -c \"$(curl -fsSL %s/%s/install.sh)\" >%s 2>&1",
-        REPO_RAW, ref, logfile)
-    local rc = luci.sys.call(cmd)
+    -- Bersihkan sisa percobaan sebelumnya: rc lama membuat dashboard menganggap
+    -- pemasangan baru sudah selesai.
+    luci.sys.call(string.format("rm -f %s %s %s %s",
+        UPDATE_LOG, UPDATE_RC, UPDATE_PID, UPDATE_SCRIPT))
+
+    -- Detached: stdout/stderr ke file log, stdin /dev/null, dan `setsid` bila ada.
+    -- Proses latar wajib menutup pipe pemanggil, kalau tidak request LuCI ikut menggantung.
+    luci.sys.call(string.format("%ssh -c %s </dev/null >%s 2>&1 &",
+        detach_prefix(), luci.util.shellquote(installer_script(ref)), UPDATE_LOG))
 
     http.write(luci.jsonc.stringify({
-        ok        = rc == 0,
-        code      = rc,
+        ok        = true,
+        started   = true,
         ref       = ref,
         ["local"] = local_version(),
-        log       = read_tail(logfile, 4000),
+    }))
+end
+
+-- GET /updatelog — dipantau dashboard tiap ~1,5 detik selama pemasangan.
+function action_updatelog()
+    local rc = read_trim(UPDATE_RC)
+    local code
+    if rc and rc:match("^%d+$") then
+        code = tonumber(rc)
+    end
+    luci.http.prepare_content("application/json")
+    luci.http.write(luci.jsonc.stringify({
+        ok        = true,
+        running   = installer_running(),
+        done      = rc ~= nil,
+        code      = code,
+        ["local"] = local_version(),
+        log       = read_tail(UPDATE_LOG, 4000),
     }))
 end

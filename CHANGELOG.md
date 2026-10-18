@@ -4,6 +4,32 @@ Semua perubahan penting proyek ini didokumentasikan di sini.
 Versi mengikuti `MAJOR.MINOR.PATCH`, dan **setiap rilis diberi tag `v<versi>`** di GitHub
 (tag inilah yang dipakai installer & tombol Update — bukan branch `main`).
 
+## 1.4.2 (2026-10-18)
+- **Halaman dibagi dua grup**: **PENGATURAN** (5 kartu mode/target/interval + tombol *Simpan & Restart
+  Service* yang kini berada di dalam grup ini) dan **SISTEM** (kartu **Service** lalu **Update**) —
+  jelas mana yang baru berlaku setelah Simpan dan mana yang langsung berlaku.
+- **Baris kartu Service dirapikan**: urutannya sekarang **[Nonaktifkan/Aktifkan] [Service aktif]
+  [Internet ONLINE]**, semuanya rapat kiri (sebelumnya tombol didorong ke kanan).
+- **Catatan rilis & log install kini berdampingan** dalam satu kartu (2 kolom, tinggi tetap dengan
+  scroll sendiri). Kalau hanya satu yang punya isi, panel itu melebar penuh; di layar ≤640px turun
+  jadi 1 kolom.
+- **Pemasangan update jalan di latar belakang dengan log live**: `POST /update` kini melepas installer
+  (detached) dan langsung menjawab, jadi request tidak lagi menggantung 30–90 detik. Dashboard
+  memantau lewat endpoint baru **`GET /updatelog`** (tiap ~1,5 detik) dan menampilkan keluaran
+  installer baris demi baris — *"Ref dipakai… → Downloading… → Installing files… → Installation
+  complete"*.
+- **UI saat memasang**: semua tombol (Cek Update, Install/Pasang ulang, Service, sampai **Simpan**)
+  dimatikan selama pemasangan, tombol yang diklik berubah jadi `Menginstall… (12s)` + spinner, ada bar
+  progres tipis dan peringatan **"jangan tutup atau muat ulang halaman ini"** (`beforeunload`), serta
+  auto-refresh 5 detik dijeda. Setelah selesai: toast hijau, versi terpasang diperbarui, lalu hitungan
+  **"Memuat ulang dalam 5 detik"** (bisa diklik untuk langsung).
+- **Tahan refresh**: kalau halaman dimuat ulang di tengah pemasangan, dashboard mendeteksi installer
+  yang masih hidup dan melanjutkan memantau + menampilkan log yang sudah terkumpul.
+- Kegagalan kini terlihat sebabnya: exit code installer (`rc`) ditulis terpisah, jadi unduhan yang gagal
+  tidak lagi dilaporkan sebagai sukses; pesan gagal menyertakan kodenya dan log tetap terbuka.
+- Anti pemasangan ganda: selama installer masih hidup, `POST /update` menjawab **409**
+  (`instalasi sedang berjalan`) alih-alih menjalankan dua installer bersamaan.
+
 ## 1.4.1 (2026-10-18)
 - Pill **status koneksi internet** dipindah dari pojok kanan atas ke kartu **Service**, di sebelah pill
   status service, dan diberi label kecil "Internet" + tooltip supaya tidak tertukar dengan status

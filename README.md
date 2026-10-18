@@ -43,9 +43,12 @@ Dashboard berisi:
 - 🔵 **LED USB** (pin default `518`) — LED indikator USB (di sebagian unit justru dipakai untuk mengendalikan kipas USB), tidak ikut status koneksi. Mode: **Mati**, **Nyala**, **Detak** (heartbeat, default), **Disko**.
 - 🎯 **Ping target** — input multi target; tiap host tampil sebagai chip dengan **status inline** (dot + latensi, live). Klik chip untuk hapus.
 - ⏱️ **Interval cek** — slider 1–60 detik dengan tanda skala **5, 10, 15, … 60** (angkanya bisa diklik untuk lompat ke nilai itu)
-- 🔌 **Service** (baris kedua) — status service + tombol **Aktifkan / Nonaktifkan**: nonaktif berarti ping & semua LED berhenti dan tidak otomatis jalan saat STB dinyalakan (setelan tetap tersimpan)
-- 🔄 **Update** (baris kedua) — tombol **Cek Update**; kalau ada versi baru, tombol **Install Update** muncul beserta **catatan rilis**, plus **Pasang ulang** (memasang kembali rilis terbaru untuk perbaikan) dan tombol **Repo GitHub** (setelan dipertahankan)
-- 💾 **Simpan & Restart Service** — tombol bergaya LuCI, langsung apply ke `/etc/config/hg680pcls` dan restart service
+- 🔌 **Service** (grup **SISTEM**) — status service + tombol **Aktifkan / Nonaktifkan**: nonaktif berarti ping & semua LED berhenti dan tidak otomatis jalan saat STB dinyalakan (setelan tetap tersimpan)
+- 🔄 **Update** (grup **SISTEM**) — tombol **Cek Update**; kalau ada versi baru, tombol **Install Update** muncul beserta **catatan rilis**, plus **Pasang ulang** (memasang kembali rilis terbaru untuk perbaikan) dan tombol **Repo GitHub** (setelan dipertahankan). Saat memasang, **log installer mengalir langsung** di panel sebelah catatan rilis dan semua tombol dimatikan sampai selesai
+- 💾 **Simpan & Restart Service** — tombol bergaya LuCI di grup **PENGATURAN**, langsung apply ke `/etc/config/hg680pcls` dan restart service
+
+> Dua grup di halaman: **PENGATURAN** (LED, target, interval — baru berlaku setelah *Simpan*) dan
+> **SISTEM** (Service & Update — langsung berlaku).
 
 Jika belum muncul LOGOUT dulu atau:
 ```bash

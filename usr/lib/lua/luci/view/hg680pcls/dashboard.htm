@@ -16,6 +16,8 @@
 .hg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
 .hg-grid+.hg-grid{margin-top:14px}
 .hg-grid-wide{grid-template-columns:1fr}
+.hg-section{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:20px 0 12px;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--hg-muted)}
+.hg-section-note{font-size:11px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--hg-muted);opacity:.85}
 .hg-card{background:var(--hg-card);border:1px solid var(--hg-border);border-radius:14px;padding:18px;box-shadow:0 1px 2px rgba(16,24,40,.04),0 8px 24px rgba(16,24,40,.05);transition:box-shadow .2s ease,transform .2s ease}
 .hg-card:hover{box-shadow:0 2px 6px rgba(16,24,40,.06),0 14px 34px rgba(16,24,40,.08);transform:translateY(-1px)}
 .hg-card h2{margin:0 0 14px;font-size:14px;text-transform:uppercase;letter-spacing:1.5px;color:var(--hg-muted)}
@@ -58,7 +60,7 @@
 .hg-toast.err{border-color:var(--hg-red);color:var(--hg-red)}
 .hg-updrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .hg-svcrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.hg-svcrow .cbi-button{margin-left:auto;min-width:150px}
+.hg-svcrow .cbi-button{min-width:150px}
 .hg-upd-note{font-size:12px;color:var(--hg-muted)}
 .hg-upd-btns{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
 .hg-upd-btns a.cbi-button{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;line-height:1.2}
@@ -67,12 +69,23 @@
 .hg-pill.hg-ver.up{border-color:var(--hg-amber)}
 .hg-pill.hg-ver.up .hg-dot{background:var(--hg-amber);box-shadow:0 0 10px var(--hg-amber);animation:none}
 .hg-notes{margin:12px 0 0;background:var(--hg-bg);border:1px solid var(--hg-border);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.55;white-space:pre-wrap;word-break:break-word;color:var(--hg-text);font-family:ui-monospace,Menlo,monospace}
+.hg-panes{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.hg-panes.one{grid-template-columns:1fr}
+.hg-panes .hg-notes,.hg-panes .hg-log{margin:0;max-height:230px;overflow:auto}
+.hg-progress{height:4px;border-radius:999px;background:var(--hg-bg);overflow:hidden;margin:-4px 0 12px}
+.hg-progress span{display:block;height:100%;width:34%;border-radius:999px;background:var(--hg-green);animation:hg-slide 1.1s ease-in-out infinite}
+@keyframes hg-slide{0%{transform:translateX(-110%)}100%{transform:translateX(320%)}}
+.hg-warn{margin-top:12px;font-size:12px;color:var(--hg-amber);display:flex;align-items:center;gap:8px;line-height:1.5}
+.hg-warn::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--hg-amber);box-shadow:0 0 8px var(--hg-amber);animation:hg-pulse 1.6s infinite;flex:none}
+.hg-reload{cursor:pointer}
+.cbi-button[data-busy="1"]::after{content:"";display:inline-block;width:11px;height:11px;margin-left:8px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;vertical-align:-2px;animation:hg-spin .8s linear infinite}
+@keyframes hg-spin{to{transform:rotate(360deg)}}
 .hg-ticks{position:relative;height:15px;margin:5px 8px 0;font-size:10.5px;color:var(--hg-muted)}
 .hg-ticks span{position:absolute;top:0;transform:translateX(-50%);cursor:pointer;padding:0 3px;border-radius:4px;line-height:15px;font-variant-numeric:tabular-nums;user-select:none}
 .hg-ticks span:hover{background:var(--hg-bg);color:var(--hg-text)}
 .hg-ticks span.on{background:var(--hg-bg);color:var(--hg-text);font-weight:700}
 .hg-log{margin:14px 0 0;background:#0f1720;color:#c9d6e4;border-radius:10px;padding:12px 14px;font-size:11.5px;line-height:1.5;max-height:230px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,monospace}
-@media(max-width:640px){.hg-modes{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.hg-modes{grid-template-columns:repeat(2,1fr)}.hg-panes{grid-template-columns:1fr}.hg-savebar .cbi-button{min-width:0;width:100%}}
 </style>
 
 <div class="hg-wrap">
@@ -82,6 +95,8 @@
       <p class="hg-sub">LED Control &amp; Ping Monitor &middot; STB HG680P</p>
     </div>
   </div>
+
+  <div class="hg-section">Pengaturan <span class="hg-section-note">berlaku setelah Simpan</span></div>
 
   <div class="hg-grid">
     <section class="hg-card">
@@ -131,24 +146,34 @@
     </section>
   </div>
 
+  <div class="hg-savebar">
+    <div class="hg-savebar-inner">
+      <span class="hg-dirty" id="dirtyNote"></span>
+      <button class="cbi-button cbi-button-apply" id="saveBtn" type="button">Simpan &amp; Restart Service</button>
+    </div>
+  </div>
+
+  <div class="hg-section">Sistem <span class="hg-section-note">langsung berlaku</span></div>
+
   <div class="hg-grid hg-grid-wide">
     <section class="hg-card">
       <h2>Service</h2>
       <div class="hg-svcrow">
-        <div class="hg-pill" id="statusPill" title="Status koneksi internet (hasil ping target)">
-          <span class="hg-dot" id="statusDot"></span><span class="hg-pill-key">Internet</span><span id="statusText">Memuat&hellip;</span>
-        </div>
+        <button class="cbi-button cbi-button-apply" id="svcBtn" type="button">Aktifkan</button>
         <div class="hg-pill" id="svcPill" title="Status service hg680pcls">
           <span class="hg-dot"></span>
           <span id="svcLabel">Service &mdash;</span>
         </div>
-        <button class="cbi-button cbi-button-apply" id="svcBtn" type="button">Aktifkan</button>
+        <div class="hg-pill" id="statusPill" title="Status koneksi internet (hasil ping target)">
+          <span class="hg-dot" id="statusDot"></span><span class="hg-pill-key">Internet</span><span id="statusText">Memuat&hellip;</span>
+        </div>
       </div>
       <p class="hg-hint">Status: <b id="svcState">&mdash;</b></p>
     </section>
 
     <section class="hg-card">
       <h2>Update</h2>
+      <div class="hg-progress hg-hide" id="updBars"><span></span></div>
       <div class="hg-updrow">
         <div class="hg-pill hg-ver" id="verPill" title="Versi terpasang">
           <span class="hg-dot" id="verDot"></span>
@@ -162,18 +187,16 @@
           <a class="cbi-button" href="https://github.com/syamsulsariphidayat7/hg680pcls" target="_blank" rel="noopener">Repo GitHub</a>
         </div>
       </div>
-      <pre class="hg-notes hg-hide" id="verNotes"></pre>
-      <pre class="hg-log hg-hide" id="updateLog"></pre>
+      <div class="hg-panes hg-hide" id="updPanes">
+        <pre class="hg-notes hg-hide" id="verNotes"></pre>
+        <pre class="hg-log hg-hide" id="updateLog"></pre>
+      </div>
+      <div class="hg-warn hg-hide" id="updWarn">Pemasangan sedang berjalan &mdash; jangan tutup atau muat ulang halaman ini.</div>
+      <div class="hg-hint hg-hide hg-reload" id="reloadHint"></div>
       <p class="hg-hint">Syamsul Sarip Hidayat &middot; Boundless</p>
     </section>
   </div>
 
-  <div class="hg-savebar">
-    <div class="hg-savebar-inner">
-      <span class="hg-dirty" id="dirtyNote"></span>
-      <button class="cbi-button cbi-button-apply" id="saveBtn" type="button">Simpan &amp; Restart Service</button>
-    </div>
-  </div>
   <div class="hg-toast" id="toast"></div>
 </div>
 
@@ -186,11 +209,24 @@ var CSRF_TOKEN = "<%=token%>";
 var CHECK_URL  = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "check")%>";
 var SERVICE_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "service")%>";
 var UPDATE_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "update")%>";
+var UPDATELOG_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "updatelog")%>";
 
 var state = { power: "online", lan: "heart", status: "heart", targets: "", interval: 5 };
 var firstLoad = true;
 var dirty = false;
 var lastStatus = null;
+
+// --- pemasangan update (log live) ---
+var installing = false;
+var pollTimer = null;
+var elapsedTimer = null;
+var installStart = 0;
+var installBtn = null;
+var installLabel = "";
+var idleTicks = 0;
+var POLL_MS = 1500;
+var INSTALL_MAX_MS = 600000;
+var IDLE_LIMIT = 10;
 
 function $(id){ return document.getElementById(id); }
 
@@ -259,7 +295,7 @@ function apiCheck(){  if (window.HG_MOCK) {
 
 function apiUpdate(){
   if (window.HG_MOCK) {
-    return Promise.resolve({ ok: true, local: "dev", log: "[mock] updated" });
+    return Promise.resolve(window.HG_MOCK.update || { ok: true, started: true, ref: "dev" });
   }
   var body = "token=" + encodeURIComponent(CSRF_TOKEN);
   return apiFetch(UPDATE_URL, {
@@ -268,6 +304,15 @@ function apiUpdate(){
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body
   });
+}
+
+function apiUpdateLog(){
+  if (window.HG_MOCK) {
+    var m = window.HG_MOCK.updatelog;
+    if (typeof m === "function") { return Promise.resolve(m()); }
+    return Promise.resolve(m || { running: false, done: false, log: "" });
+  }
+  return apiFetch(UPDATELOG_URL, { credentials: "same-origin" });
 }
 
 function toast(msg, cls){
@@ -506,7 +551,8 @@ function doCheck(){
   btn.disabled = true; btn.textContent = "Memeriksa...";
   $("verNote").textContent = "memeriksa versi...";
   $("verPill").classList.remove("up");
-  notes.classList.add("hg-hide"); notes.textContent = "";
+  notes.textContent = "";
+  showPane("verNotes", false);
   apiCheck().then(function(d){
     if (!d) return;
     if (d.local) $("verLocal").textContent = d.local;
@@ -514,7 +560,8 @@ function doCheck(){
       $("verPill").classList.add("up");
       $("verNote").textContent = "Versi baru tersedia: v" + d.remote;
       $("updateBtn").classList.remove("hg-hide");
-      if (d.notes) { notes.textContent = d.notes; notes.classList.remove("hg-hide"); }
+      if (d.notes) { notes.textContent = d.notes; showPane("verNotes", true); }
+      else { showPane("verNotes", false); }
     } else if (d.remote) {
       $("verNote").textContent = "Sudah terbaru (v" + d.remote + ")";
       $("updateBtn").classList.add("hg-hide");
@@ -530,28 +577,182 @@ function doCheck(){
   });
 }
 
+// ===== Panel catatan rilis + log install (2 kolom, 1 kolom bila hanya satu terisi) =====
+
+function syncPanes(){
+  var box = $("updPanes"), notes = $("verNotes"), log = $("updateLog");
+  if (!box) return;
+  var vis = 0;
+  if (notes && !notes.classList.contains("hg-hide")) vis++;
+  if (log && !log.classList.contains("hg-hide")) vis++;
+  box.classList.toggle("one", vis === 1);
+  box.classList.toggle("hg-hide", vis === 0);
+}
+
+function showPane(id, show){
+  var el = $(id);
+  if (!el) return;
+  el.classList.toggle("hg-hide", !show);
+  syncPanes();
+}
+
+function logLine(text, reset){
+  var el = $("updateLog");
+  if (!el) return;
+  showPane("updateLog", true);
+  el.textContent = reset ? text : el.textContent + text;
+  el.scrollTop = el.scrollHeight;
+}
+
+// ===== UI saat pemasangan =====
+
+function busyButtons(on){
+  ["checkBtn", "updateBtn", "reinstallBtn", "saveBtn", "svcBtn"].forEach(function(id){
+    var el = $(id);
+    if (el) el.disabled = !!on;
+  });
+}
+
+function stopTimers(){
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+  if (elapsedTimer) { clearInterval(elapsedTimer); elapsedTimer = null; }
+}
+
+function beginInstall(){
+  installing = true;
+  installStart = Date.now();
+  idleTicks = 0;
+  busyButtons(true);
+  $("updBars").classList.remove("hg-hide");
+  $("updWarn").classList.remove("hg-hide");
+  $("reloadHint").classList.add("hg-hide");
+  if (installBtn) {
+    installBtn.setAttribute("data-busy", "1");
+    installBtn.textContent = installLabel + " (0s)";
+  }
+  if (elapsedTimer) clearInterval(elapsedTimer);
+  elapsedTimer = setInterval(function(){
+    if (!installBtn) return;
+    installBtn.textContent = installLabel
+      + " (" + Math.round((Date.now() - installStart) / 1000) + "s)";
+  }, 1000);
+  window.onbeforeunload = function(){
+    return "Pemasangan sedang berjalan. Yakin meninggalkan halaman ini?";
+  };
+}
+
+function endInstall(okFlag, msg){
+  installing = false;
+  stopTimers();
+  if (installBtn) {
+    installBtn.setAttribute("data-busy", "0");
+    installBtn.textContent = installLabel;
+  }
+  // saat sukses, tombol dibiarkan mati sampai halaman dimuat ulang
+  if (!okFlag) busyButtons(false);
+  $("updBars").classList.add("hg-hide");
+  $("updWarn").classList.add("hg-hide");
+  window.onbeforeunload = null;
+  if (msg) toast(msg, okFlag ? "ok" : "err");
+}
+
+function countdownReload(sec){
+  var el = $("reloadHint");
+  if (!el) return;
+  var n = sec || 5;
+  el.classList.remove("hg-hide");
+  el.onclick = function(){ location.reload(); };
+  (function step(){
+    if (n <= 0) { location.reload(); return; }
+    el.textContent = "Memuat ulang dalam " + n + " detik — klik untuk sekarang.";
+    n--;
+    setTimeout(step, 1000);
+  })();
+}
+
+function startPolling(){
+  if (pollTimer) clearInterval(pollTimer);
+  var tick = function(){
+    apiUpdateLog().then(function(d){
+      if (!d) return;
+      if (d.log) {
+        var el = $("updateLog");
+        showPane("updateLog", true);
+        if (el.textContent !== d.log) el.textContent = d.log;
+        el.scrollTop = el.scrollHeight;
+      }
+      if (d.done) {
+        stopTimers();
+        if (d.code === 0) {
+          if (d.local) $("verLocal").textContent = d.local;
+          logLine("\n[HG680PCLS] Selesai. Versi terpasang: " + (d.local || "?") + "\n");
+          endInstall(true, "Berhasil dipasang. Memuat ulang...");
+          countdownReload(5);
+        } else {
+          logLine("\n[HG680PCLS] Gagal (kode "
+            + (d.code === null || d.code === undefined ? "?" : d.code) + ").\n");
+          endInstall(false, "Gagal dipasang. Lihat log di bawah.");
+        }
+        return;
+      }
+      if (installStart && Date.now() - installStart > INSTALL_MAX_MS) {
+        logLine("\n[HG680PCLS] Pemasangan terlalu lama — pemantauan dihentikan.\n");
+        endInstall(false, "Pemasangan terlalu lama. Cek log di STB.");
+        return;
+      }
+      if (d.running) { idleTicks = 0; return; }
+      idleTicks++;
+      if (idleTicks > IDLE_LIMIT) {
+        logLine("\n[HG680PCLS] Installer tidak berjalan.\n");
+        endInstall(false, "Installer tidak berjalan. Coba lagi.");
+      }
+    }).catch(function(){
+      // gagal sesaat (mis. service restart di tengah install): coba lagi tick berikutnya
+    });
+  };
+  tick();
+  pollTimer = setInterval(tick, POLL_MS);
+}
+
 function runUpdate(btn, label, repairing){
+  if (installing) return;
   if (!confirm(repairing
       ? "Pasang ulang rilis terbaru dari GitHub?\nFile ditimpa dengan rilis resmi; setelan & target ping tetap dipertahankan, service akan restart."
       : "Install versi terbaru dari GitHub?\nSetelan & target ping tetap dipertahankan, service akan restart.")) return;
-  var log = $("updateLog");
-  log.classList.remove("hg-hide");
-  log.textContent = "Mengunduh & memasang dari GitHub...\n";
-  btn.disabled = true; btn.textContent = "Menginstall...";
+
+  installBtn = btn;
+  installLabel = label;
+  logLine("Menyiapkan pemasangan dari GitHub...\n", true);
+  beginInstall();
   apiUpdate().then(function(r){
-    log.textContent += (r && (r.log || r.error)) || "";
-    if (r && r.ok) {
-      toast((repairing ? "Pasang ulang berhasil. " : "Update berhasil. ") + "Memuat ulang...", "ok");
-      setTimeout(function(){ location.reload(); }, 2500);
-    } else {
-      toast("Gagal. Lihat log di bawah.", "err");
-      btn.disabled = false; btn.textContent = label;
+    if (!r || !r.ok) {
+      logLine(((r && r.error) || "Gagal memulai pemasangan.") + "\n");
+      endInstall(false, "Gagal memulai pemasangan");
+      return;
     }
+    startPolling();
   }).catch(function(e){
-    log.textContent += (e && e.message) || "Gagal menghubungi STB.";
-    toast("Gagal menghubungi STB.", "err");
-    btn.disabled = false; btn.textContent = label;
+    logLine(((e && e.message) || "Gagal menghubungi STB.") + "\n");
+    endInstall(false, "Gagal menghubungi STB.");
   });
+}
+
+// Kalau halaman dimuat ulang saat pemasangan masih jalan, lanjutkan memantau.
+function resumeInstall(){
+  apiUpdateLog().then(function(d){
+    if (!d || d.done || !d.running) return;
+    var ubtn = $("updateBtn");
+    if (ubtn && !ubtn.classList.contains("hg-hide")) {
+      installBtn = ubtn; installLabel = "Install Update";
+    } else {
+      installBtn = $("reinstallBtn"); installLabel = "Pasang ulang";
+    }
+    $("verNote").textContent = "sedang memasang...";
+    if (d.log) { showPane("updateLog", true); $("updateLog").textContent = d.log; }
+    else { logLine("Pemasangan sedang berjalan...\n", true); }
+    beginInstall();
+    startPolling();
+  }).catch(function(){});
 }
 
 $("checkBtn").addEventListener("click", doCheck);
@@ -565,7 +766,8 @@ $("reinstallBtn").addEventListener("click", function(){
 });
 
 refresh();
-setInterval(function(){ if (!document.hidden) refresh(); }, 5000);
+resumeInstall();
+setInterval(function(){ if (!document.hidden && !installing) refresh(); }, 5000);
 })();
 </script>
 <%+footer%>

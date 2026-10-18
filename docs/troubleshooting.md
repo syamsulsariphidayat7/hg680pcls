@@ -89,13 +89,30 @@ ls /etc/rc.d/*hg680pcls                     # ada = autostart aktif saat boot
 - Dari dashboard: **Cek Update** → kalau ada versi baru muncul **Install Update**; **Pasang ulang**
   memasang kembali rilis terbaru (tanpa perlu ada versi baru). Setelan & target ping selalu
   dipertahankan, termasuk keadaan service (aktif/nonaktif).
+- Selama pemasangan, **log installer mengalir langsung** di panel sebelah catatan rilis dan semua
+  tombol dimatikan (termasuk *Simpan*). Setelah sukses halaman memuat ulang sendiri; kalau gagal,
+  tombol aktif kembali dan log tetap terbuka.
+- Pemasangan berjalan di latar belakang di STB, jadi **aman kalau halaman di-refresh**: dashboard
+  mendeteksi installer yang masih hidup dan melanjutkan pemantauan. Yang **jangan** dilakukan adalah
+  me-reboot STB di tengah pemasangan.
+- Log mentah di STB: `/tmp/hg680pcls-update.log`, exit code di `/tmp/hg680pcls-update.rc`
+  (`0` = sukses), PID installer di `/tmp/hg680pcls-update.pid`.
+
+```sh
+# dari SSH, kalau ingin memantau langsung
+tail -f /tmp/hg680pcls-update.log
+```
+
+- Dashboard bilang **"Installer tidak berjalan"**: proses installer mati sebelum menulis exit code
+  (biasanya tidak bisa mengunduh dari GitHub). Cek koneksi/`curl`, lalu tekan **Pasang ulang** lagi.
+- **Instalasi sedang berjalan** (HTTP 409): masih ada installer yang hidup. Tunggu sampai selesai,
+  atau hentikan paksa lewat SSH: `kill $(cat /tmp/hg680pcls-update.pid)`.
 - Manual dari SSH (pin ke versi tertentu, mis. untuk rollback):
 
 ```sh
 HG680PCLS_REF=v1.4.0 sh -c "$(curl -fsSL https://raw.githubusercontent.com/syamsulsariphidayat7/hg680pcls/main/install.sh)"
 ```
 
-- Log installer terakhir: `/tmp/hg680pcls-update.log` (juga ditampilkan di kartu Update).
 - Menu/kartu tidak muncul setelah install: logout LuCI atau `/etc/init.d/uhttpd restart`.
 - **Cek Update** memakai GitHub API (batas 60 permintaan/jam per IP); kalau kena batas, versi
   dibaca dari branch `main` sebagai cadangan.

@@ -4,23 +4,39 @@ Ringkas — update tiap akhir sesi.
 
 **Tanggal terakhir diperbarui:** 2026-10-18
 **Fase:** Maintenance / fitur (setelah Development + Deployment)
-**Versi:** 1.4.1
+**Versi:** 1.4.2
 
 ## Sedang dikerjakan (sesi ini)
-- [x] **Kontrol service: Aktifkan / Nonaktifkan** — kartu **Service** (baris kedua, sebelum Update) dengan pill status
-      (berjalan/berhenti + autostart) dan satu tombol sakelar.
-- [x] Endpoint baru `POST /service` (`action=on|off`) — wajib POST + token CSRF (pakai `require_post()`),
-      memanggil `/etc/init.d/hg680pcls {enable,start} | {stop,disable}`.
-- [x] `/status` menambah field `enabled` (cek symlink `/etc/rc.d/*hg680pcls`).
-- [x] `service_running()` kini juga mendeteksi penanda `# hg680pcls-service` di cmdline shell service,
-      jadi indikator "berjalan" akurat sejak `Aktifkan` (LED power/lan baru muncul setelah ping pertama).
-- [x] `POST /save` tidak lagi me-restart (menghidupkan) service yang sengaja dinonaktifkan.
-- [x] `install.sh` menghormati pilihan user: reinstall/upgrade mempertahankan keadaan nonaktif,
-      fresh install tetap langsung aktif.
-- [x] Dashboard dirapikan: kartu **LED Status → LED USB** (pin 518 = LED indikator USB — di sebagian
-      unit dipakai untuk kendali kipas USB), urutan kartu LED jadi **LED LAN → LED USB → LED Power**,
-      dan deskripsi panjang dihapus (kartu Service menyisakan status hidup, kartu Update kredit;
-      label "Target aktif (klik untuk hapus)" tetap).
+- [x] **Tata letak halaman dibagi dua grup**: **PENGATURAN** (5 kartu + tombol *Simpan & Restart Service*
+      di dalam grup) dan **SISTEM** (**Service** lalu **Update**) — dengan catatan kecil
+      "berlaku setelah Simpan" / "langsung berlaku".
+- [x] Baris kartu Service: urutan **[tombol] [pill Service] [pill Internet]**, semuanya rapat kiri
+      (`margin-left:auto` dihapus).
+- [x] Kartu Update: panel **catatan rilis + log install** berdampingan (2 kolom, tinggi tetap + scroll),
+      melebar penuh bila hanya satu yang terisi (`syncPanes()` → kelas `one`), 1 kolom di ≤640px.
+- [x] **Pemasangan update detached + log live**: `POST /update` melepas installer (`sh -c … &`,
+      stdin `/dev/null`, stdout/stderr → `/tmp/hg680pcls-update.log`) lalu langsung menjawab —
+      request LuCI tidak lagi menggantung 30–90 detik. Skrip wrapper menulis PID sendiri,
+      mengunduh `install.sh` ke file (supaya exit code `curl` tidak tertukar dengan exit code
+      installer), lalu menulis exit code ke `/tmp/hg680pcls-update.rc`.
+- [x] Endpoint baru **`GET /updatelog`** (`running`, `done`, `code`, `local`, `log` = 4000 karakter
+      terakhir) + penolakan **409 `instalasi sedang berjalan`** kalau masih ada installer hidup.
+- [x] Dashboard: poll `/updatelog` tiap 1,5 detik, log mengalir ke panel, semua tombol (Cek Update,
+      Install/Pasang ulang, Service, **Simpan**) dimatikan selama pemasangan, label `Menginstall… (Ns)`
+      + spinner, bar progres, peringatan "jangan tutup halaman" (`beforeunload`), auto-refresh 5 detik
+      dijeda, hitungan "Memuat ulang dalam 5 detik" (bisa diklik) setelah sukses, exit code dilaporkan
+      saat gagal, dan **pemantauan dilanjutkan** kalau halaman di-refresh di tengah pemasangan.
+- [x] Verifikasi lokal: `luac -p`, `sh -n`, `node --check` + **smoke test DOM 93/93**
+      (`/tmp/opencode/dom_test.js`, DOM & `fetch` palsu: struktur, urutan section/kartu, panel,
+      alur sukses/gagal/409/buntu, pemulihan setelah refresh) + **harness controller 36/36**
+      (`/tmp/opencode/ctrl_test.lua`, stub luci/nixio: penanda `running`/`done`, perintah detached,
+      protokol pid/rc dengan `curl` palsu, anti pemasangan ganda). Harness ada di `/tmp` (tidak di repo).
+- [ ] Uji di STB (v1.4.0–v1.4.2 sekaligus): urutan kartu & dua grup, baris Service rapat kiri, panel
+      catatan/log, tombol Nonaktifkan/Aktifkan, **Cek Update → Install Update dengan log mengalir**,
+      serta pemulihan saat halaman di-refresh di tengah pemasangan.
+
+## Rilis 1.4.0 & 1.4.1
+ 
 - [x] Commit + push + tag **v1.4.0** (`f9dc99b`, tag `v1.4.0` sudah di-push & terverifikasi lewat GitHub API).
 - [x] Pill status internet dipindah dari pojok kanan atas ke kartu **Service** (di sebelah pill status
       service, diberi label "Internet" + tooltip).
@@ -29,9 +45,6 @@ Ringkas — update tiap akhir sesi.
       serta cara update/rollback manual. Ditautkan dari README + daftar struktur `AGENTS.md`.
 - [x] Commit + push + tag **v1.4.1** (`9efa409`, tag `v1.4.1` sudah di-push & terverifikasi lewat GitHub API:
       `/tags` mengembalikan 1.4.1, `VERSION` & heading `CHANGELOG` di tag cocok, `docs/troubleshooting.md` tersedia).
-- [ ] Uji di STB: tombol Nonaktifkan (LED mati + tidak ada proses), Aktifkan, setelah reboot,
-      plus urutan/penamaan kartu baru (LED LAN → LED USB → LED Power), kartu Service,
-      dan posisi pill status internet (di kartu Service, bukan lagi pojok atas).
 
 ## Sudah selesai (rilis sebelumnya)
 - v1.2.4 — tombol **Pasang ulang** di kartu Update + skala slider interval (angka 5…60 bisa diklik).
@@ -55,6 +68,10 @@ Ringkas — update tiap akhir sesi.
 ## Blocker / catatan
 - **Tidak bisa render-test LuCI dari host dev** (LuCI tidak terpasang di sini). Verifikasi visual
   harus dilakukan di STB setelah install.
+- Pemasangan update kini dijalankan **detached** dari proses LuCI. Pola yang sama (`… >/dev/null 2>&1 &`)
+  sudah dipakai `POST /save` untuk restart service dan jalan di STB, tapi perilaku "installer tetap
+  hidup setelah request LuCI selesai" baru diuji di harness lokal (curl palsu) — **perlu dipastikan
+  sekali di STB** saat Install Update pertama.
 - Endpoint `/check` memakai GitHub API (rate limit 60 req/jam per IP) — sudah ada fallback ke `main`.
 - Pin 518 = **LED indikator USB** (dikonfirmasi user), bukan LED status generik. Mode **Mati** menulis
   `0` ke pin (LED padam) — pakai itu bila di unit lain pin ini ternyata bukan LED.
@@ -63,6 +80,14 @@ Ringkas — update tiap akhir sesi.
 - `luac -p` controller → OK
 - `sh -n` install.sh / uninstall.sh / init.d / hg680pcl → OK
 - `node --check` blok `<script>` dashboard (setelah substitusi `<%=…%>`) → OK
+- **Smoke test DOM dashboard — 93/93** (`/tmp/opencode/dom_test.js`; DOM + `fetch` palsu):
+  struktur dua grup, urutan Service→Update, urutan isi baris Service, panel tersembunyi di awal,
+  kelas `one`/`two`, alur Cek Update, pemasangan sukses (log mengalir 3 poll + toast + versi baru +
+  countdown), gagal (`rc=1`), tolak 409, installer buntu (~15 dtk), dan pemulihan setelah refresh.
+- **Harness controller — 36/36** (`/tmp/opencode/ctrl_test.lua`, stub `luci`/`nixio`, jalan dengan `luajit`):
+  `done`/`running`/`code` dari `/updatelog`, PID hidup & stale, pemotongan log 4000 karakter,
+  perintah detached (`</dev/null`, log, `&`), wrapper lolos `sh -n`, protokol PID/rc dengan `curl` palsu
+  (sukses → 0, installer gagal → 7, unduhan gagal → 1 — bukan sukses palsu), dan tolak ganda (409).
 - Harness uji LED lokal (`/tmp/test_led.sh`, sysfs palsu) → semua langkah sesuai harapan
 
 ## Rencana berikutnya (disetujui arahnya, belum dikerjakan)
