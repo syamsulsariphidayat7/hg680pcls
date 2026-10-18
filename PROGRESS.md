@@ -27,7 +27,8 @@ Ringkas — update tiap akhir sesi.
 - [x] Dokumentasi **`docs/troubleshooting.md`** — perintah tes konektivitas dari PC & dari STB,
       urutan dugaan kenapa dashboard bilang OFFLINE padahal internet normal, cek service/LED,
       serta cara update/rollback manual. Ditautkan dari README + daftar struktur `AGENTS.md`.
-- [ ] Commit + push + tag **v1.4.1**.
+- [x] Commit + push + tag **v1.4.1** (`9efa409`, tag `v1.4.1` sudah di-push & terverifikasi lewat GitHub API:
+      `/tags` mengembalikan 1.4.1, `VERSION` & heading `CHANGELOG` di tag cocok, `docs/troubleshooting.md` tersedia).
 - [ ] Uji di STB: tombol Nonaktifkan (LED mati + tidak ada proses), Aktifkan, setelah reboot,
       plus urutan/penamaan kartu baru (LED LAN → LED USB → LED Power), kartu Service,
       dan posisi pill status internet (di kartu Service, bukan lagi pojok atas).
