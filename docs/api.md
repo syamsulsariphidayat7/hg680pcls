@@ -111,6 +111,12 @@ Bila API gagal (offline / rate limit), fallback membaca `VERSION` dari branch `m
 
 Jalankan installer resmi dari ref rilis, sebagai root.
 
+Dipicu oleh dua tombol di dashboard:
+- **Install Update** (muncul hanya bila ada versi lebih baru),
+- **Pasang ulang** (selalu tersedia — untuk perbaikan, mis. service/LED bermasalah padahal versi sudah terbaru).
+
+Keduanya memanggil endpoint ini tanpa parameter tambahan; ref selalu rilis terbaru.
+
 1. Resolve ref = tag `v<versi>` tertinggi (`remote_version()`), fallback `main`.
 2. `curl` `install.sh` dari ref tersebut lalu jalankan (`sh -c`), output ke `/tmp/hg680pcls-update.log`.
 3. Installer mempertahankan `/etc/config/hg680pcls`, backup ke `/etc/config/hg680pcls.bak`,

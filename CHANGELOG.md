@@ -4,6 +4,13 @@ Semua perubahan penting proyek ini didokumentasikan di sini.
 Versi mengikuti `MAJOR.MINOR.PATCH`, dan **setiap rilis diberi tag `v<versi>`** di GitHub
 (tag inilah yang dipakai installer & tombol Update — bukan branch `main`).
 
+## 1.2.4 (2026-10-18)
+- Tombol **Pasang ulang** di kartu Update: memasang kembali rilis terbaru untuk perbaikan
+  (berguna saat versi terpasang sudah terbaru tapi service/LED bermasalah — tombol Install Update
+  hanya muncul kalau ada versi lebih baru). Setelan & target ping tetap dipertahankan.
+- Slider **Interval Cek** kini punya tanda skala 5, 10, 15, … 60; angkanya bisa diklik untuk
+  langsung lompat ke nilai tersebut (slider tetap bebas 1–60 detik).
+
 ## 1.2.3 (2026-10-18)
 - Keamanan: endpoint `save` & `update` kini **wajib POST + token CSRF**
   (`post(...)` di routing + `require_post()` di dalam action).

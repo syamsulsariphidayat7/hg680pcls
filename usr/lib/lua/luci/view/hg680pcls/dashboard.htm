@@ -63,6 +63,10 @@
 .hg-pill.hg-ver.up{border-color:var(--hg-amber)}
 .hg-pill.hg-ver.up .hg-dot{background:var(--hg-amber);box-shadow:0 0 10px var(--hg-amber);animation:none}
 .hg-notes{margin:12px 0 0;background:var(--hg-bg);border:1px solid var(--hg-border);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.55;white-space:pre-wrap;word-break:break-word;color:var(--hg-text);font-family:ui-monospace,Menlo,monospace}
+.hg-ticks{position:relative;height:15px;margin:5px 8px 0;font-size:10.5px;color:var(--hg-muted)}
+.hg-ticks span{position:absolute;top:0;transform:translateX(-50%);cursor:pointer;padding:0 3px;border-radius:4px;line-height:15px;font-variant-numeric:tabular-nums;user-select:none}
+.hg-ticks span:hover{background:var(--hg-bg);color:var(--hg-text)}
+.hg-ticks span.on{background:var(--hg-bg);color:var(--hg-text);font-weight:700}
 .hg-log{margin:14px 0 0;background:#0f1720;color:#c9d6e4;border-radius:10px;padding:12px 14px;font-size:11.5px;line-height:1.5;max-height:230px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,monospace}
 @media(max-width:640px){.hg-modes{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -116,7 +120,8 @@
       <h2>Interval Cek</h2>
       <div class="hg-rangeval"><span id="intervalVal">5</span> <small>detik</small></div>
       <input class="hg-range" id="interval" type="range" min="1" max="60" step="1" value="5">
-      <p class="hg-hint">Jeda antar pengecekan ping (1&ndash;60 detik). Makin kecil makin responsif, makin besar makin hemat resource.</p>
+      <div class="hg-ticks" id="intervalTicks"></div>
+      <p class="hg-hint">Jeda antar pengecekan ping (1&ndash;60 detik). Makin kecil makin responsif, makin besar makin hemat resource. Angka di atas bisa diklik untuk lompat ke nilai itu.</p>
     </section>
   </div>
 
@@ -132,12 +137,13 @@
         <div class="hg-upd-btns">
           <button class="cbi-button cbi-button-action" id="checkBtn" type="button">Cek Update</button>
           <button class="cbi-button cbi-button-apply hg-hide" id="updateBtn" type="button">Install Update</button>
+          <button class="cbi-button" id="reinstallBtn" type="button" title="Pasang ulang rilis terbaru (untuk perbaikan)">Pasang ulang</button>
           <a class="cbi-button" href="https://github.com/syamsulsariphidayat7/hg680pcls" target="_blank" rel="noopener">Repo GitHub</a>
         </div>
       </div>
       <pre class="hg-notes hg-hide" id="verNotes"></pre>
       <pre class="hg-log hg-hide" id="updateLog"></pre>
-      <p class="hg-hint">Klik <b>Cek Update</b> untuk bandingkan versi terpasang dengan rilis terbaru di GitHub. Kalau ada versi baru, tombol <b>Install Update</b> muncul beserta catatan rilisnya. Setelan &amp; target ping tetap dipertahankan.<br>Service: <b id="svcState">&mdash;</b> &middot; Syamsul Sarip Hidayat &middot; Boundless</p>
+      <p class="hg-hint">Klik <b>Cek Update</b> untuk bandingkan versi terpasang dengan rilis terbaru di GitHub. Kalau ada versi baru, tombol <b>Install Update</b> muncul beserta catatan rilisnya. <b>Pasang ulang</b> memasang kembali rilis terbaru (untuk perbaikan, mis. LED/service bermasalah). Setelan &amp; target ping selalu dipertahankan.<br>Service: <b id="svcState">&mdash;</b> &middot; Syamsul Sarip Hidayat &middot; Boundless</p>
     </section>
   </div>
 
@@ -302,6 +308,7 @@ function fillForm(cfg){
   $("pingTargets").value = state.targets;
   $("interval").value = state.interval;
   $("intervalVal").textContent = state.interval;
+  syncTicks();
   renderTargetChips();
 }
 
@@ -329,9 +336,51 @@ $("pingTargets").addEventListener("input", function(){
   renderTargetChips(); markDirty();
 });
 
+var INT_MIN = 1, INT_MAX = 60, TICK_STEP = 5;
+
+function syncTicks(){
+  var box = $("intervalTicks");
+  if (!box) return;
+  var near = Math.min(INT_MAX, Math.max(TICK_STEP, Math.round(state.interval / TICK_STEP) * TICK_STEP));
+  var spans = box.getElementsByTagName("span");
+  for (var i = 0; i < spans.length; i++) {
+    if (parseInt(spans[i].getAttribute("data-val"), 10) === near) {
+      spans[i].classList.add("on");
+    } else {
+      spans[i].classList.remove("on");
+    }
+  }
+}
+
+function setIntervalVal(v){
+  v = Math.min(INT_MAX, Math.max(INT_MIN, parseInt(v, 10) || INT_MIN));
+  state.interval = v;
+  $("interval").value = v;
+  $("intervalVal").textContent = v;
+  syncTicks();
+  markDirty();
+}
+
+(function buildIntervalTicks(){
+  var box = $("intervalTicks");
+  if (!box) return;
+  for (var v = TICK_STEP; v <= INT_MAX; v += TICK_STEP) {
+    var s = document.createElement("span");
+    s.textContent = v;
+    s.setAttribute("data-val", v);
+    s.title = "Set " + v + " detik";
+    s.style.left = ((v - INT_MIN) * 100 / (INT_MAX - INT_MIN)).toFixed(3) + "%";
+    s.addEventListener("click", function(e){
+      setIntervalVal(e.currentTarget.getAttribute("data-val"));
+    });
+    box.appendChild(s);
+  }
+})();
+
 $("interval").addEventListener("input", function(){
   state.interval = parseInt($("interval").value, 10);
   $("intervalVal").textContent = state.interval;
+  syncTicks();
   markDirty();
 });
 
@@ -387,11 +436,10 @@ function doCheck(){
   });
 }
 
-$("checkBtn").addEventListener("click", doCheck);
-
-$("updateBtn").addEventListener("click", function(){
-  var btn = $("updateBtn");
-  if (!confirm("Install versi terbaru dari GitHub?\nSetelan & target ping tetap dipertahankan, service akan restart.")) return;
+function runUpdate(btn, label, repairing){
+  if (!confirm(repairing
+      ? "Pasang ulang rilis terbaru dari GitHub?\nFile ditimpa dengan rilis resmi; setelan & target ping tetap dipertahankan, service akan restart."
+      : "Install versi terbaru dari GitHub?\nSetelan & target ping tetap dipertahankan, service akan restart.")) return;
   var log = $("updateLog");
   log.classList.remove("hg-hide");
   log.textContent = "Mengunduh & memasang dari GitHub...\n";
@@ -399,17 +447,27 @@ $("updateBtn").addEventListener("click", function(){
   apiUpdate().then(function(r){
     log.textContent += (r && (r.log || r.error)) || "";
     if (r && r.ok) {
-      toast("Update berhasil. Memuat ulang...", "ok");
+      toast((repairing ? "Pasang ulang berhasil. " : "Update berhasil. ") + "Memuat ulang...", "ok");
       setTimeout(function(){ location.reload(); }, 2500);
     } else {
-      toast("Update gagal. Lihat log di bawah.", "err");
-      btn.disabled = false; btn.textContent = "Install Update";
+      toast("Gagal. Lihat log di bawah.", "err");
+      btn.disabled = false; btn.textContent = label;
     }
   }).catch(function(e){
     log.textContent += (e && e.message) || "Gagal menghubungi STB.";
-    toast("Update gagal.", "err");
-    btn.disabled = false; btn.textContent = "Install Update";
+    toast("Gagal menghubungi STB.", "err");
+    btn.disabled = false; btn.textContent = label;
   });
+}
+
+$("checkBtn").addEventListener("click", doCheck);
+
+$("updateBtn").addEventListener("click", function(){
+  runUpdate($("updateBtn"), "Install Update", false);
+});
+
+$("reinstallBtn").addEventListener("click", function(){
+  runUpdate($("reinstallBtn"), "Pasang ulang", true);
 });
 
 refresh();
