@@ -149,7 +149,7 @@
 "use strict";
 var STATUS_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "status")%>";
 var SAVE_URL   = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "save")%>";
-var CSRF_TOKEN = "<%=luci.csrf.get_csrf_token()%>";
+var CSRF_TOKEN = "<%=token%>";
 
 var state = { power: "heart", lan: "disko", targets: "", interval: 5 };
 var firstLoad = true;

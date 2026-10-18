@@ -30,6 +30,7 @@ rm -f /usr/lib/lua/luci/model/cbi/hg680pcls.lua
 
 # Copy ke sistem
 echo "[HG680PCLS] Installing files..."
+mkdir -p /usr/lib/lua/luci/view/hg680pcls
 cp -f etc/config/hg680pcls /etc/config/
 cp -f etc/init.d/hg680pcls /etc/init.d/
 cp -f usr/bin/hg680pcl /usr/bin/
