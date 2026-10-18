@@ -1,6 +1,6 @@
 <%+header%>
 <style>
-.hg-wrap{--hg-bg:#eef2f6;--hg-card:#ffffff;--hg-border:#d3dae2;--hg-text:#1b2330;--hg-muted:#5c6a7a;--hg-bar:rgba(255,255,255,.94);--hg-green:#22c55e;--hg-red:#ef4444;--hg-amber:#f59e0b;max-width:100%;padding:16px 14px 18px;background:linear-gradient(180deg,#f7fafc,#eef2f6);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--hg-text)}
+.hg-wrap{--hg-bg:#eef2f6;--hg-card:#ffffff;--hg-border:#d3dae2;--hg-text:#1b2330;--hg-muted:#5c6a7a;--hg-bar:rgba(255,255,255,.94);--hg-green:#22c55e;--hg-red:#ef4444;--hg-amber:#f59e0b;max-width:100%;padding:16px 14px 18px;background:#ffffff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--hg-text)}
 .hg-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:18px}
 .hg-title{margin:0;font-size:26px;letter-spacing:1px}
 .hg-title .hg-accent{color:var(--hg-green)}
@@ -62,6 +62,7 @@
 .hg-pill.hg-ver{cursor:default}
 .hg-pill.hg-ver.up{border-color:var(--hg-amber)}
 .hg-pill.hg-ver.up .hg-dot{background:var(--hg-amber);box-shadow:0 0 10px var(--hg-amber);animation:none}
+.hg-notes{margin:12px 0 0;background:var(--hg-bg);border:1px solid var(--hg-border);border-radius:10px;padding:10px 12px;font-size:12px;line-height:1.55;white-space:pre-wrap;word-break:break-word;color:var(--hg-text);font-family:ui-monospace,Menlo,monospace}
 .hg-log{margin:14px 0 0;background:#0f1720;color:#c9d6e4;border-radius:10px;padding:12px 14px;font-size:11.5px;line-height:1.5;max-height:230px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,monospace}
 @media(max-width:640px){.hg-modes{grid-template-columns:repeat(2,1fr)}}
 </style>
@@ -108,7 +109,7 @@
         placeholder="graph.instagram.com">
       <div class="hg-chips-title">Target aktif (klik untuk hapus)</div>
       <div class="hg-chips" id="targetChips"></div>
-      <p class="hg-hint">Tulis target, pisahkan dengan spasi. Tiap host tampil dengan status inline (dot + latensi), live.</p>
+      <p class="hg-hint">Tulis target, pisahkan dengan spasi (maks 8; huruf/angka, titik, strip, garis bawah, titik dua). Tiap host tampil dengan status inline (dot + latensi), live.</p>
     </section>
 
     <section class="hg-card">
@@ -134,8 +135,9 @@
           <a class="cbi-button" href="https://github.com/syamsulsariphidayat7/hg680pcls" target="_blank" rel="noopener">Repo GitHub</a>
         </div>
       </div>
+      <pre class="hg-notes hg-hide" id="verNotes"></pre>
       <pre class="hg-log hg-hide" id="updateLog"></pre>
-      <p class="hg-hint">Klik <b>Cek Update</b> untuk bandingkan versi terpasang dengan GitHub. Kalau ada versi baru, tombol <b>Install Update</b> muncul. Setelan &amp; target ping tetap dipertahankan.<br>Service: <b id="svcState">&mdash;</b> &middot; Syamsul Sarip Hidayat &middot; Boundless</p>
+      <p class="hg-hint">Klik <b>Cek Update</b> untuk bandingkan versi terpasang dengan rilis terbaru di GitHub. Kalau ada versi baru, tombol <b>Install Update</b> muncul beserta catatan rilisnya. Setelan &amp; target ping tetap dipertahankan.<br>Service: <b id="svcState">&mdash;</b> &middot; Syamsul Sarip Hidayat &middot; Boundless</p>
     </section>
   </div>
 
@@ -164,11 +166,25 @@ var lastStatus = null;
 
 function $(id){ return document.getElementById(id); }
 
+function apiFetch(url, opts){
+  return fetch(url, opts).then(function(r){
+    if (r.ok) return r.json();
+    return r.json().catch(function(){ return null; }).then(function(d){
+      var e = new Error((d && d.error) || (r.status === 403
+        ? "Sesi/CSRF tidak valid — muat ulang halaman LuCI"
+        : "Permintaan ditolak (HTTP " + r.status + ")"));
+      e.status = r.status;
+      e.data = d;
+      throw e;
+    });
+  });
+}
+
 function apiStatus(){
   if (window.HG_MOCK) {
     return new Promise(function(res){ setTimeout(function(){ res(window.HG_MOCK.status); }, 250); });
   }
-  return fetch(STATUS_URL, { credentials: "same-origin" }).then(function(r){ return r.json(); });
+  return apiFetch(STATUS_URL, { credentials: "same-origin" });
 }
 
 function apiSave(){
@@ -180,19 +196,19 @@ function apiSave(){
     + "&lan_mode=" + encodeURIComponent(state.lan)
     + "&interval=" + encodeURIComponent(state.interval)
     + "&ping_targets=" + encodeURIComponent(state.targets);
-  return fetch(SAVE_URL, {
+  return apiFetch(SAVE_URL, {
     method: "POST",
     credentials: "same-origin",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body
-  }).then(function(r){ return r.json(); });
+  });
 }
 
 function apiCheck(){
   if (window.HG_MOCK) {
     return Promise.resolve(window.HG_MOCK.check || { local: "dev", remote: "dev", update: false });
   }
-  return fetch(CHECK_URL, { credentials: "same-origin" }).then(function(r){ return r.json(); });
+  return apiFetch(CHECK_URL, { credentials: "same-origin" });
 }
 
 function apiUpdate(){
@@ -200,12 +216,12 @@ function apiUpdate(){
     return Promise.resolve({ ok: true, local: "dev", log: "[mock] updated" });
   }
   var body = "token=" + encodeURIComponent(CSRF_TOKEN);
-  return fetch(UPDATE_URL, {
+  return apiFetch(UPDATE_URL, {
     method: "POST",
     credentials: "same-origin",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: body
-  }).then(function(r){ return r.json(); });
+  });
 }
 
 function toast(msg, cls){
@@ -330,8 +346,8 @@ $("saveBtn").addEventListener("click", function(){
     } else {
       toast("Gagal: " + ((r && r.error) || "unknown"), "err");
     }
-  }).catch(function(){
-    toast("Gagal menghubungi STB.", "err");
+  }).catch(function(e){
+    toast(e && e.message ? "Gagal: " + e.message : "Gagal menghubungi STB.", "err");
   }).finally(function(){
     btn.disabled = false; btn.textContent = "Simpan & Restart Service";
   });
@@ -343,9 +359,11 @@ function doCheck(){
   if (checking) return;
   checking = true;
   var btn = $("checkBtn");
+  var notes = $("verNotes");
   btn.disabled = true; btn.textContent = "Memeriksa...";
   $("verNote").textContent = "memeriksa versi...";
   $("verPill").classList.remove("up");
+  notes.classList.add("hg-hide"); notes.textContent = "";
   apiCheck().then(function(d){
     if (!d) return;
     if (d.local) $("verLocal").textContent = d.local;
@@ -353,6 +371,7 @@ function doCheck(){
       $("verPill").classList.add("up");
       $("verNote").textContent = "Versi baru tersedia: v" + d.remote;
       $("updateBtn").classList.remove("hg-hide");
+      if (d.notes) { notes.textContent = d.notes; notes.classList.remove("hg-hide"); }
     } else if (d.remote) {
       $("verNote").textContent = "Sudah terbaru (v" + d.remote + ")";
       $("updateBtn").classList.add("hg-hide");
@@ -360,8 +379,8 @@ function doCheck(){
       $("verNote").textContent = "Tidak bisa cek versi (periksa internet)";
       $("updateBtn").classList.add("hg-hide");
     }
-  }).catch(function(){
-    $("verNote").textContent = "Gagal cek update";
+  }).catch(function(e){
+    $("verNote").textContent = (e && e.message) || "Gagal cek update";
   }).finally(function(){
     checking = false;
     btn.disabled = false; btn.textContent = "Cek Update";
@@ -386,8 +405,8 @@ $("updateBtn").addEventListener("click", function(){
       toast("Update gagal. Lihat log di bawah.", "err");
       btn.disabled = false; btn.textContent = "Install Update";
     }
-  }).catch(function(){
-    log.textContent += "Gagal menghubungi STB.";
+  }).catch(function(e){
+    log.textContent += (e && e.message) || "Gagal menghubungi STB.";
     toast("Update gagal.", "err");
     btn.disabled = false; btn.textContent = "Install Update";
   });
