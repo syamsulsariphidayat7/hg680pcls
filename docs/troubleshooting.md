@@ -40,7 +40,6 @@ uci show hg680pcls.settings         # target, interval, mode LED, pin
 Perintah manual skrip LED (hasilnya langsung kelihatan di LED, tidak mengubah setelan UCI):
 
 ```sh
-/usr/bin/hg680pcl status on     # LED USB nyala
 /usr/bin/hg680pcl power online  # LED power pola online
 /usr/bin/hg680pcl lan heart     # LED LAN pola heart
 /usr/bin/hg680pcl reset         # semua LED padam, semua proses pola disapu
@@ -78,8 +77,6 @@ ls /etc/rc.d/*hg680pcls                     # ada = autostart aktif saat boot
   belum masuk siklus ping pertama (interval bisa sampai 60 detik) — atau pin di unitmu beda
   (lihat bagian Nomor pin GPIO di README).
 - **LED bertumpuk / pola aneh**: `/usr/bin/hg680pcl reset` menyapu proses pola yang tidak tercatat.
-- **Pin 518 (LED USB)**: kalau di unitmu pin ini dipakai untuk kipas USB, pakai mode **Nyala**/**Mati** —
-  pola **Detak**/**Disko** membuat pin kedip terus dan tidak cocok untuk kipas.
 - **Service nonaktif tidak kembali saat boot**: memang begitu (disengaja) — tekan **Aktifkan**.
 
 ---

@@ -4,22 +4,22 @@ Ringkas — update tiap akhir sesi.
 
 **Tanggal terakhir diperbarui:** 2026-10-18
 **Fase:** Maintenance / fitur (setelah Development + Deployment)
-**Versi:** 1.4.3
+**Versi:** 1.5.0
 
 ## Sedang dikerjakan (sesi ini)
-- [x] Kartu **Ping Target**: keterangan **"Pisahkan dengan spasi · maksimal 8 target"** di bawah kolom
-      input (kelas `hg-hint` yang sudah ada — konsisten dengan baris `Status: …` di kartu Service),
-      supaya jelas cara menulis lebih dari satu target. Batas 8 target tidak berubah.
-- [x] Verifikasi: `luac -p`, `sh -n`, `node --check` + smoke test DOM **97/97** (3 cek baru: hint ada di
-      dalam kartu Ping Target, posisinya antara kolom input dan judul chip, serta menyebut "spasi" & "8 target").
-- [x] Commit + push + tag **v1.4.3** (`d6d60b7`, tag `v1.4.3` sudah di-push & terverifikasi lewat GitHub API:
-      `/tags` mengembalikan 1.4.3 teratas, `VERSION` = 1.4.3, heading pertama `CHANGELOG` = 1.4.3,
-      teks hint ada di `dashboard.htm` pada tag dan berada sebelum judul chip, controller di tag masih
-      memuat `action_updatelog` + `setsid` (fitur 1.4.2 utuh), `VERSION` di `main` = 1.4.3).
-- [ ] Uji di STB (cukup sekali install **v1.4.3**, sudah mencakup v1.4.0–v1.4.2 sekaligus):
-      urutan kartu & dua grup PENGATURAN/SISTEM, baris Service rapat kiri, keterangan pemisah target,
-      panel catatan/log, tombol Nonaktifkan/Aktifkan, **Cek Update → Install Update dengan log mengalir**,
-      serta pemulihan saat halaman di-refresh di tengah pemasangan.
+- [x] **Rilis v1.5.0** — dashboard hanya mengontrol **LED LAN** dan **LED Power**.
+- [x] Kode: kartu mode ketiga dihapus dari view; controller hanya memvalidasi/menyimpan
+      `power_mode` + `lan_mode`; `/status` tidak lagi mengirim field mode ketiga; skrip
+      `usr/bin/hg680pcl` hanya menerima target `power`/`lan`/`reset`/`stop`; `etc/init.d` tidak lagi
+      menggerakkan pin ketiga saat start; default UCI bersih.
+- [x] Docs disamakan: `README.md` (daftar fitur + override pin + contoh uji GPIO),
+      `CHANGELOG.md` (entri 1.3.0/1.4.0 dirapikan, heading 1.5.0), `docs/api.md`,
+      `docs/troubleshooting.md`, `AGENTS.md`, `docs/plan-ipk.md`.
+- [x] Verifikasi: `luac -p`, `sh -n`, `node --check` semua lolos; `VERSION` 1.5.0; `CHANGELOG` heading 1.5.0.
+- [ ] Commit + push + tag **v1.5.0** (tunggu izin user).
+- [ ] Uji di STB: pastikan hanya dua kartu mode yang tampil, Simpan mengubah pola LED LAN/Power,
+      dan service lama (yang masih menyimpan pin ketiga di UCI) tetap jalan normal — setelan lama
+      diabaikan tanpa error.
 
 ## Rilis 1.4.2 (detail)
 - [x] **Tata letak halaman dibagi dua grup**: **PENGATURAN** (5 kartu + tombol *Simpan & Restart Service*
@@ -88,8 +88,6 @@ Ringkas — update tiap akhir sesi.
   hidup setelah request LuCI selesai" baru diuji di harness lokal (curl palsu) — **perlu dipastikan
   sekali di STB** saat Install Update pertama.
 - Endpoint `/check` memakai GitHub API (rate limit 60 req/jam per IP) — sudah ada fallback ke `main`.
-- Pin 518 = **LED indikator USB** (dikonfirmasi user), bukan LED status generik. Mode **Mati** menulis
-  `0` ke pin (LED padam) — pakai itu bila di unit lain pin ini ternyata bukan LED.
 
 ## Verifikasi yang sudah dijalankan
 - `luac -p` controller → OK
@@ -124,4 +122,4 @@ Ringkas — update tiap akhir sesi.
 - CI GitHub Actions (shellcheck + luac -p + sh -n + node --check).
 - Histori uptime & tombol Restart Service.
 - Rollback update dari dashboard.
-- Mode LED `heart`/`disko` untuk power/LAN sudah ada; mode `nyala tetap` (`on`) masih hanya untuk LED USB (pin 518).
+- Mode LED `on` (nyala tetap) untuk power/LAN belum ada — sekarang hanya pola kedip (offline/online/heart/disko).

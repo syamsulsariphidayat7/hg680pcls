@@ -17,7 +17,7 @@ VERSION                                   # penanda versi, dipasang ke /usr/lib/
 install.sh / uninstall.sh                 # installer & uninstaller (dijalankan di STB sebagai root)
 etc/config/hg680pcls                      # default UCI: ping_targets, interval, power_mode, lan_mode
 etc/init.d/hg680pcls                      # service procd: loop ping + set mode LED
-usr/bin/hg680pcl                          # skrip GPIO LED (power/lan: offline|online|heart|disko; status: off|on|heart|disko — pin 518 = LED USB)
+usr/bin/hg680pcl                          # skrip GPIO LED (power/lan: offline|online|heart|disko)
 usr/lib/lua/luci/controller/hg680pcls.lua # route LuCI + endpoint status/save/service/check/update
 usr/lib/lua/luci/view/hg680pcls/dashboard.htm  # halaman dashboard (CSS inline + JS vanilla)
 CHANGELOG.md                              # riwayat rilis (sumber catatan "Cek Update")

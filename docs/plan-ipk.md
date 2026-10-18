@@ -51,7 +51,7 @@ Section: luci
 Priority: optional
 Maintainer: Syamsul Sarip Hidayat <...>
 Installed-Size: <KB terhitung otomatis>
-Description: Kontrol LED Power/LAN/USB + monitor ping untuk STB HG680P (halaman LuCI).
+Description: Kontrol LED Power/LAN + monitor ping untuk STB HG680P (halaman LuCI).
 ```
 
 `conffiles`:

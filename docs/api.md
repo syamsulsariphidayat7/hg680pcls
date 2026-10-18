@@ -25,7 +25,6 @@ Data untuk pill status & chip target di dashboard. Dipanggil berkala (5 detik).
   "config": {
     "power_mode": "online",
     "lan_mode": "heart",
-    "status_mode": "heart",
     "ping_targets": "graph.instagram.com",
     "interval": 5
   },
@@ -43,7 +42,6 @@ Data untuk pill status & chip target di dashboard. Dipanggil berkala (5 detik).
 | `enabled` | bool | `true` bila service aktif saat boot (ada symlink `/etc/rc.d/*hg680pcls`) |
 | `version` | string | versi terpasang dari `VERSION`; `""` bila file tidak ada |
 | `config.power_mode` / `config.lan_mode` | string | mode tersimpan (`offline`\|`online`\|`heart`\|`disko`) |
-| `config.status_mode` | string | mode LED USB, pin 518 = LED indikator USB (`off`\|`on`\|`heart`\|`disko`) |
 | `config.ping_targets` | string | daftar target, dipisah spasi |
 | `config.interval` | number | interval cek (detik) |
 | `targets[]` | array | maksimum **8** entri; `ms` = latensi, `null` bila tidak merespons |
@@ -62,7 +60,6 @@ Simpan setelan lalu restart service. Body `application/x-www-form-urlencoded`.
 | `token` | ya | token CSRF sesi LuCI |
 | `power_mode` | ya | salah satu dari `offline`\|`online`\|`heart`\|`disko` |
 | `lan_mode` | ya | idem |
-| `status_mode` | tidak | salah satu dari `off`\|`on`\|`heart`\|`disko`; dilewati bila kosong/absen (installasi lama) |
 | `interval` | ya | angka 1–60 |
 | `ping_targets` | ya | dipisah spasi; maks **8**; tiap token cocok `^[A-Za-z0-9][A-Za-z0-9._:-]*$`, maks 253 char |
 
@@ -78,7 +75,7 @@ Simpan setelan lalu restart service. Body `application/x-www-form-urlencoded`.
 { "ok": false, "error": "target tidak valid: -f" }
 ```
 
-Pesan lain yang mungkin: `power_mode tidak valid`, `lan_mode tidak valid`, `status_mode tidak valid`,
+Pesan lain yang mungkin: `power_mode tidak valid`, `lan_mode tidak valid`,
 `interval harus 1-60 detik`, `maksimal 8 target`, `target terlalu panjang: …`,
 `ping target tidak boleh kosong`.
 
