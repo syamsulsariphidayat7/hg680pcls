@@ -4,9 +4,21 @@ Ringkas — update tiap akhir sesi.
 
 **Tanggal terakhir diperbarui:** 2026-10-18
 **Fase:** Maintenance / fitur (setelah Development + Deployment)
-**Versi:** 1.4.2
+**Versi:** 1.4.3
 
 ## Sedang dikerjakan (sesi ini)
+- [x] Kartu **Ping Target**: keterangan **"Pisahkan dengan spasi · maksimal 8 target"** di bawah kolom
+      input (kelas `hg-hint` yang sudah ada — konsisten dengan baris `Status: …` di kartu Service),
+      supaya jelas cara menulis lebih dari satu target. Batas 8 target tidak berubah.
+- [x] Verifikasi: `luac -p`, `sh -n`, `node --check` + smoke test DOM **97/97** (3 cek baru: hint ada di
+      dalam kartu Ping Target, posisinya antara kolom input dan judul chip, serta menyebut "spasi" & "8 target").
+- [x] Commit + push + tag **v1.4.3**.
+- [ ] Uji di STB (cukup sekali install **v1.4.3**, sudah mencakup v1.4.0–v1.4.2 sekaligus):
+      urutan kartu & dua grup PENGATURAN/SISTEM, baris Service rapat kiri, keterangan pemisah target,
+      panel catatan/log, tombol Nonaktifkan/Aktifkan, **Cek Update → Install Update dengan log mengalir**,
+      serta pemulihan saat halaman di-refresh di tengah pemasangan.
+
+## Rilis 1.4.2 (detail)
 - [x] **Tata letak halaman dibagi dua grup**: **PENGATURAN** (5 kartu + tombol *Simpan & Restart Service*
       di dalam grup) dan **SISTEM** (**Service** lalu **Update**) — dengan catatan kecil
       "berlaku setelah Simpan" / "langsung berlaku".
@@ -35,12 +47,8 @@ Ringkas — update tiap akhir sesi.
       `/tags` mengembalikan 1.4.2 teratas, `VERSION` = 1.4.2, heading pertama `CHANGELOG` = 1.4.2,
       `docs/troubleshooting.md` & `docs/api.md` (bagian `GET /updatelog`) tersedia di tag, dan kode
       controller/dashboard di tag memuat `action_updatelog`, route `updatelog`, `setsid`, `syncPanes`).
-- [ ] Uji di STB (v1.4.0–v1.4.2 sekaligus): urutan kartu & dua grup, baris Service rapat kiri, panel
-      catatan/log, tombol Nonaktifkan/Aktifkan, **Cek Update → Install Update dengan log mengalir**,
-      serta pemulihan saat halaman di-refresh di tengah pemasangan.
 
-## Rilis 1.4.0 & 1.4.1
- 
+## Rilis 1.4.0 & 1.4.1 (detail)
 - [x] Commit + push + tag **v1.4.0** (`f9dc99b`, tag `v1.4.0` sudah di-push & terverifikasi lewat GitHub API).
 - [x] Pill status internet dipindah dari pojok kanan atas ke kartu **Service** (di sebelah pill status
       service, diberi label "Internet" + tooltip).

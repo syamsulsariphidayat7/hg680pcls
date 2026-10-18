@@ -4,6 +4,10 @@ Semua perubahan penting proyek ini didokumentasikan di sini.
 Versi mengikuti `MAJOR.MINOR.PATCH`, dan **setiap rilis diberi tag `v<versi>`** di GitHub
 (tag inilah yang dipakai installer & tombol Update — bukan branch `main`).
 
+## 1.4.3 (2026-10-18)
+- Kartu **Ping Target**: keterangan **"Pisahkan dengan spasi · maksimal 8 target"** di bawah kolom input,
+  supaya jelas cara menulis lebih dari satu target (batas 8 target tidak berubah).
+
 ## 1.4.2 (2026-10-18)
 - **Halaman dibagi dua grup**: **PENGATURAN** (5 kartu mode/target/interval + tombol *Simpan & Restart
   Service* yang kini berada di dalam grup ini) dan **SISTEM** (kartu **Service** lalu **Update**) —
