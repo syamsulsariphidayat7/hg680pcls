@@ -68,13 +68,9 @@
 .hg-svcrow .hg-btn-off:hover{background:#b91c1c;border-color:#b91c1c;color:#fff}
 .hg-svcrow .cbi-button[disabled]{background:var(--hg-bg);border-color:var(--hg-border);color:var(--hg-muted);opacity:.7;cursor:not-allowed}
 .hg-upd-note{font-size:12px;color:var(--hg-muted)}
-.hg-card-danger{border-color:#fecaca}
-.hg-card-danger h2{color:#b91c1c}
-.hg-uninst{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.hg-card-danger .hg-btn-danger{background:#b91c1c;border:1px solid #b91c1c;color:#fff;font-weight:600;min-width:180px;transition:background .15s,border-color .15s,color .15s}
-.hg-card-danger .hg-btn-danger:hover{background:#991b1b;border-color:#991b1b;color:#fff}
-.hg-card-danger .hg-btn-danger[disabled]{background:var(--hg-bg);border-color:var(--hg-border);color:var(--hg-muted);opacity:.7;cursor:not-allowed}
-.hg-card-danger code{background:var(--hg-bg);border-radius:4px;padding:1px 4px;font-size:11.5px}
+.hg-upd-btns .hg-btn-danger{background:#b91c1c;border:1px solid #b91c1c;color:#fff;font-weight:600;transition:background .15s,border-color .15s,color .15s}
+.hg-upd-btns .hg-btn-danger:hover{background:#991b1b;border-color:#991b1b;color:#fff}
+.hg-upd-btns .hg-btn-danger[disabled]{background:var(--hg-bg);border-color:var(--hg-border);color:var(--hg-muted);opacity:.7;cursor:not-allowed}
 .hg-upd-btns{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
 .hg-upd-btns a.cbi-button{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;line-height:1.2}
 .hg-hide{display:none!important}
@@ -98,7 +94,7 @@
 .hg-ticks span:hover{background:var(--hg-bg);color:var(--hg-text)}
 .hg-ticks span.on{background:var(--hg-bg);color:var(--hg-text);font-weight:700}
 .hg-log{margin:14px 0 0;background:#0f1720;color:#c9d6e4;border-radius:10px;padding:12px 14px;font-size:11.5px;line-height:1.5;max-height:230px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,monospace}
-@media(max-width:640px){.hg-panes{grid-template-columns:1fr}.hg-savebar .cbi-button{min-width:0;width:100%}.hg-card-danger .hg-btn-danger{width:100%}}
+@media(max-width:640px){.hg-panes{grid-template-columns:1fr}.hg-savebar .cbi-button{min-width:0;width:100%}}
 @media(max-width:330px){.hg-modes{grid-template-columns:repeat(2,1fr)}}
 </style>
 
@@ -190,6 +186,7 @@
           <button class="cbi-button cbi-button-action" id="checkBtn" type="button">Cek Update</button>
           <button class="cbi-button cbi-button-apply hg-hide" id="updateBtn" type="button">Install Update</button>
           <button class="cbi-button" id="reinstallBtn" type="button" title="Pasang ulang rilis terbaru (untuk perbaikan)">Pasang ulang</button>
+          <button class="cbi-button hg-btn-danger" id="uninstBtn" type="button" title="Hapus add-on HG680PCLS dari STB">Uninstall</button>
           <a class="cbi-button" href="https://github.com/syamsulsariphidayat7/hg680pcls" target="_blank" rel="noopener">Repo GitHub</a>
         </div>
       </div>
@@ -198,20 +195,10 @@
         <pre class="hg-log hg-hide" id="updateLog"></pre>
       </div>
       <div class="hg-warn hg-hide" id="updWarn">Pemasangan sedang berjalan &mdash; jangan tutup atau muat ulang halaman ini.</div>
+      <div class="hg-warn hg-hide" id="uninstWarn">Menghapus add-on &mdash; jangan tutup halaman ini sampai selesai.</div>
+      <pre class="hg-log hg-hide" id="uninstLog"></pre>
       <div class="hg-hint hg-hide hg-reload" id="reloadHint"></div>
       <p class="hg-hint">Syamsul Sarip Hidayat &middot; Boundless</p>
-    </section>
-
-    <section class="hg-card hg-card-danger">
-      <h2>Uninstall</h2>
-      <div class="hg-uninst">
-        <button class="cbi-button hg-btn-danger" id="uninstBtn" type="button">Hapus HG680PCLS</button>
-        <span class="hg-upd-note" id="uninstNote">service berhenti, file aplikasi &amp; setelan dihapus</span>
-      </div>
-      <p class="hg-hint">Backup config (<code>/etc/config/hg680pcls.bak</code>) tetap disimpan.
-        Halaman ini akan hilang setelah add-on dihapus.</p>
-      <div class="hg-warn hg-hide" id="uninstWarn">Menghapus &mdash; jangan tutup halaman ini sampai selesai.</div>
-      <pre class="hg-log hg-hide" id="uninstLog"></pre>
     </section>
   </div>
 
@@ -819,18 +806,15 @@ var UNINSTALL_MAX_MS = 90000;
 function uninstUi(on){
   var btn = $("uninstBtn");
   btn.disabled = !!on;
-  btn.textContent = on ? "Menghapus…" : "Hapus HG680PCLS";
+  btn.textContent = on ? "Menghapus…" : "Uninstall";
   $("uninstWarn").classList.toggle("hg-hide", !on);
-  $("uninstNote").textContent = on
-    ? "menghapus add-on dari STB…"
-    : "service berhenti, file aplikasi & setelan dihapus";
 }
 
 function uninstFinish(ok, msg){
   uninstalling = false;
   if (uninstTimer) { clearTimeout(uninstTimer); uninstTimer = null; }
   if (ok) {
-    $("uninstNote").textContent = "selesai — mengalihkan ke LuCI…";
+    $("uninstWarn").textContent = "Selesai — mengalihkan ke LuCI…";
     toast("HG680PCLS dihapus. Mengalihkan ke LuCI…", "ok");
     setTimeout(function(){ window.location.href = ADMIN_URL; }, 2200);
     return;
