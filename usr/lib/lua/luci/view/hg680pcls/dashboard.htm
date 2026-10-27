@@ -28,11 +28,14 @@
 .hg-tchip.bad .hg-cdot{background:var(--hg-red);box-shadow:0 0 8px var(--hg-red)}
 .hg-cms{color:var(--hg-muted);font-size:11px}
 .hg-chips-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--hg-muted);margin:14px 0 2px}
-.hg-modes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-.hg-mode{display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--hg-bg);border:1px solid var(--hg-border);border-radius:12px;padding:14px 6px;cursor:pointer;color:var(--hg-text);font-size:12px;transition:border-color .15s,transform .15s}
-.hg-mode:hover{transform:translateY(-2px)}
+.hg-card-note{margin-left:6px;font-size:11px;font-weight:400;letter-spacing:0;text-transform:none;color:var(--hg-muted);opacity:.85}
+.hg-modblock+.hg-modblock{margin-top:12px}
+.hg-modlabel{margin-bottom:7px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--hg-muted)}
+.hg-modes{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.hg-mode{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--hg-bg);border:1px solid var(--hg-border);border-radius:10px;padding:9px 4px;cursor:pointer;color:var(--hg-text);font-size:11.5px;line-height:1.2;transition:border-color .15s,transform .15s}
+.hg-mode:hover{transform:translateY(-1px)}
 .hg-mode.active{border-color:var(--hg-green);box-shadow:0 0 0 1px var(--hg-green),0 0 18px rgba(34,197,94,.15)}
-.hg-led{width:16px;height:16px;border-radius:50%;background:#333}
+.hg-led{width:12px;height:12px;border-radius:50%;background:#333}
 .hg-led.m-offline{animation:hg-red 1s infinite}
 .hg-led.m-online{animation:hg-green 1s infinite}
 .hg-led.m-heart{animation:hg-heart 1.2s infinite}
@@ -58,7 +61,12 @@
 .hg-toast.err{border-color:var(--hg-red);color:var(--hg-red)}
 .hg-updrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .hg-svcrow{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.hg-svcrow .cbi-button{min-width:150px}
+.hg-svcrow .cbi-button{min-width:150px;font-weight:600;border:1px solid transparent;transition:background .15s,color .15s,border-color .15s}
+.hg-svcrow .hg-btn-on{background:#15803d;border-color:#15803d;color:#fff}
+.hg-svcrow .hg-btn-on:hover{background:#166534;border-color:#166534;color:#fff}
+.hg-svcrow .hg-btn-off{background:#fff;border-color:#b91c1c;color:#b91c1c}
+.hg-svcrow .hg-btn-off:hover{background:#b91c1c;border-color:#b91c1c;color:#fff}
+.hg-svcrow .cbi-button[disabled]{background:var(--hg-bg);border-color:var(--hg-border);color:var(--hg-muted);opacity:.7;cursor:not-allowed}
 .hg-upd-note{font-size:12px;color:var(--hg-muted)}
 .hg-upd-btns{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
 .hg-upd-btns a.cbi-button{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;line-height:1.2}
@@ -83,7 +91,8 @@
 .hg-ticks span:hover{background:var(--hg-bg);color:var(--hg-text)}
 .hg-ticks span.on{background:var(--hg-bg);color:var(--hg-text);font-weight:700}
 .hg-log{margin:14px 0 0;background:#0f1720;color:#c9d6e4;border-radius:10px;padding:12px 14px;font-size:11.5px;line-height:1.5;max-height:230px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,monospace}
-@media(max-width:640px){.hg-modes{grid-template-columns:repeat(2,1fr)}.hg-panes{grid-template-columns:1fr}.hg-savebar .cbi-button{min-width:0;width:100%}}
+@media(max-width:640px){.hg-panes{grid-template-columns:1fr}.hg-savebar .cbi-button{min-width:0;width:100%}}
+@media(max-width:330px){.hg-modes{grid-template-columns:repeat(2,1fr)}}
 </style>
 
 <div class="hg-wrap">
@@ -98,22 +107,24 @@
 
   <div class="hg-grid">
     <section class="hg-card">
-      <h2>LED LAN</h2>
-      <div class="hg-modes" id="lanModes">
-        <button type="button" class="hg-mode" data-group="lan" data-mode="offline"><span class="hg-led m-offline"></span>Offline</button>
-        <button type="button" class="hg-mode" data-group="lan" data-mode="online"><span class="hg-led m-online"></span>Online</button>
-        <button type="button" class="hg-mode" data-group="lan" data-mode="heart"><span class="hg-led m-heart"></span>Heart</button>
-        <button type="button" class="hg-mode" data-group="lan" data-mode="disko"><span class="hg-led m-disko"></span>Disko</button>
+      <h2>Mode LED <span class="hg-card-note">LAN &amp; Power</span></h2>
+      <div class="hg-modblock">
+        <div class="hg-modlabel">LED LAN</div>
+        <div class="hg-modes" id="lanModes">
+          <button type="button" class="hg-mode" data-group="lan" data-mode="offline"><span class="hg-led m-offline"></span>Offline</button>
+          <button type="button" class="hg-mode" data-group="lan" data-mode="online"><span class="hg-led m-online"></span>Online</button>
+          <button type="button" class="hg-mode" data-group="lan" data-mode="heart"><span class="hg-led m-heart"></span>Heart</button>
+          <button type="button" class="hg-mode" data-group="lan" data-mode="disko"><span class="hg-led m-disko"></span>Disko</button>
+        </div>
       </div>
-    </section>
-
-    <section class="hg-card">
-      <h2>LED Power</h2>
-      <div class="hg-modes" id="powerModes">
-        <button type="button" class="hg-mode" data-group="power" data-mode="offline"><span class="hg-led m-offline"></span>Offline</button>
-        <button type="button" class="hg-mode" data-group="power" data-mode="online"><span class="hg-led m-online"></span>Online</button>
-        <button type="button" class="hg-mode" data-group="power" data-mode="heart"><span class="hg-led m-heart"></span>Heart</button>
-        <button type="button" class="hg-mode" data-group="power" data-mode="disko"><span class="hg-led m-disko"></span>Disko</button>
+      <div class="hg-modblock">
+        <div class="hg-modlabel">LED Power</div>
+        <div class="hg-modes" id="powerModes">
+          <button type="button" class="hg-mode" data-group="power" data-mode="offline"><span class="hg-led m-offline"></span>Offline</button>
+          <button type="button" class="hg-mode" data-group="power" data-mode="online"><span class="hg-led m-online"></span>Online</button>
+          <button type="button" class="hg-mode" data-group="power" data-mode="heart"><span class="hg-led m-heart"></span>Heart</button>
+          <button type="button" class="hg-mode" data-group="power" data-mode="disko"><span class="hg-led m-disko"></span>Disko</button>
+        </div>
       </div>
     </section>
 
@@ -147,7 +158,7 @@
     <section class="hg-card">
       <h2>Service</h2>
       <div class="hg-svcrow">
-        <button class="cbi-button cbi-button-apply" id="svcBtn" type="button">Aktifkan</button>
+        <button class="cbi-button hg-btn-on" id="svcBtn" type="button">Aktifkan</button>
         <div class="hg-pill" id="svcPill" title="Status service hg680pcls">
           <span class="hg-dot"></span>
           <span id="svcLabel">Service &mdash;</span>
@@ -332,6 +343,8 @@ function statusOf(host){
 }
 
 function removeTarget(host){
+  var msg = "Hapus target " + host + " dari daftar?\n\nPerubahan baru berlaku setelah Simpan & Restart Service.";
+  if (!window.confirm(msg)) { return; }
   $("pingTargets").value = parseTargets().filter(function(x){ return x !== host; }).join(" ");
   state.targets = $("pingTargets").value;
   renderTargetChips(); markDirty();
@@ -371,7 +384,10 @@ function renderService(d){
   $("svcState").textContent = (running ? "sedang berjalan" : "sedang berhenti")
     + (enabled ? ", otomatis saat boot" : ", tidak otomatis saat boot");
   btn.textContent = enabled ? "Nonaktifkan" : "Aktifkan";
-  btn.className = "cbi-button" + (enabled ? "" : " cbi-button-apply");
+  btn.className = "cbi-button " + (enabled ? "hg-btn-off" : "hg-btn-on");
+  btn.title = enabled
+    ? "Matikan service: ping & kontrol LED berhenti"
+    : "Nyalakan service sekarang dan otomatis saat STB dinyalakan";
   btn.setAttribute("data-action", enabled ? "off" : "on");
 }
 
