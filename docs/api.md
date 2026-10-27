@@ -230,8 +230,8 @@ Cara membaca keadaan:
 
 ## `POST /uninstall` — **POST+token**
 
-Hapus add-on dari STB (setara menjalankan `uninstall.sh` lewat SSH), dipicu tombol
-**Hapus HG680PCLS** di kartu **Uninstall** (grup SISTEM). Konfirmasi berlapis di dashboard:
+Hapus add-on dari STB (setara menjalankan `uninstall.sh` lewat SSH), dipicu tombol merah **Uninstall**
+di baris tombol kartu **Update** (sebelah *Pasang ulang*). Konfirmasi berlapis di dashboard:
 `prompt` yang mewajibkan mengetik **HAPUS**.
 
 1. Tolak (409) bila masih ada `update` atau `uninstall` lain yang berjalan.

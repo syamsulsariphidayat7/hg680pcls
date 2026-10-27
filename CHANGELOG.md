@@ -4,6 +4,10 @@ Semua perubahan penting proyek ini didokumentasikan di sini.
 Versi mengikuti `MAJOR.MINOR.PATCH`, dan **setiap rilis diberi tag `v<versi>`** di GitHub
 (tag inilah yang dipakai installer & tombol Update — bukan branch `main`).
 
+## 1.5.3 (2026-10-27)
+- **Tombol Uninstall dipindah ke baris tombol Update** (sebelah *Pasang ulang*), kartu terpisah + teks
+  penjelasannya dihapus. Saat proses berjalan, baris peringatan dan log tampil di dalam kartu Update.
+
 ## 1.5.2 (2026-10-27)
 - **Tombol Uninstall di dashboard**: kartu **Uninstall** (grup SISTEM) menghapus add-on tanpa SSH —
   konfirmasi wajib mengetik `HAPUS`, progres live, lalu halaman dialihkan ke LuCI. `POST /uninstall`

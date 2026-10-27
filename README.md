@@ -28,9 +28,10 @@ HG680PCLS_REF=v1.2.2 sh -c "$(curl -fsSL https://raw.githubusercontent.com/syams
 ---
 
 ## 🧹 Uninstall
-Dari dashboard: kartu **Uninstall** (grup SISTEM) → **Hapus HG680PCLS** → ketik `HAPUS` untuk konfirmasi.
-Service berhenti, LED direset, file add-on & setelan dihapus; backup `/etc/config/hg680pcls.bak` tetap
-disimpan. Halaman akan hilang dan dashboard mengalihkan ke halaman utama LuCI.
+Dari dashboard: kartu **Update** → tombol **Uninstall** (di sebelah *Pasang ulang*) → ketik `HAPUS` untuk
+konfirmasi. Service berhenti, LED direset, file add-on & setelan dihapus; backup
+`/etc/config/hg680pcls.bak` tetap disimpan. Halaman akan hilang dan dashboard mengalihkan ke halaman
+utama LuCI.
 
 Atau lewat SSH (tanpa dashboard):
 ```bash
@@ -50,10 +51,10 @@ Dashboard berisi:
 - 🔌 **Service** (grup **SISTEM**) — status service + tombol **Aktifkan / Nonaktifkan**: nonaktif berarti ping & semua LED berhenti dan tidak otomatis jalan saat STB dinyalakan (setelan tetap tersimpan)
 - 🔄 **Update** (grup **SISTEM**) — tombol **Cek Update**; kalau ada versi baru, tombol **Install Update** muncul beserta **catatan rilis**, plus **Pasang ulang** (memasang kembali rilis terbaru untuk perbaikan) dan tombol **Repo GitHub** (setelan dipertahankan). Saat memasang, **log installer mengalir langsung** di panel sebelah catatan rilis dan semua tombol dimatikan sampai selesai
 - 💾 **Simpan & Restart Service** — tombol bergaya LuCI di grup **PENGATURAN**, langsung apply ke `/etc/config/hg680pcls` dan restart service
-- 🧹 **Uninstall** (grup **SISTEM**) — hapus add-on tanpa SSH: konfirmasi ketik `HAPUS`, progres live, lalu dialihkan ke halaman utama LuCI
+- 🧹 **Uninstall** — tombol merah di baris yang sama dengan **Pasang ulang** (kartu **Update**): hapus add-on tanpa SSH, konfirmasi ketik `HAPUS`, progres live, lalu dialihkan ke halaman utama LuCI
 
 > Dua grup di halaman: **PENGATURAN** (LED, target, interval — baru berlaku setelah *Simpan*) dan
-> **SISTEM** (Service, Update, Uninstall — langsung berlaku).
+> **SISTEM** (Service & Update, termasuk tombol Uninstall — langsung berlaku).
 
 Jika belum muncul LOGOUT dulu atau:
 ```bash

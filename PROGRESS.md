@@ -4,9 +4,14 @@ Ringkas — update tiap akhir sesi.
 
 **Tanggal terakhir diperbarui:** 2026-10-27
 **Fase:** Maintenance / fitur (setelah Development + Deployment)
-**Versi:** 1.5.2
+**Versi:** 1.5.3
 
 ## Sedang dikerjakan (sesi ini)
+- [x] **Rilis v1.5.3** — tombol Uninstall dipindah ke baris tombol kartu Update. `VERSION` = 1.5.3,
+      `CHANGELOG` heading `## 1.5.3 (2026-10-27)`, commit + tag `v1.5.3` + push.
+- [x] **Uninstall dipindah ke baris tombol Update**: kartu Uninstall + teks penjelasnya
+      dihapus, tombol merah **Uninstall** kini di sebelah **Pasang ulang**; peringatan & log proses muncul
+      di dalam kartu Update. `docs/api.md` tidak berubah (endpoint tetap).
 - [x] **Rilis v1.5.2** — tombol Uninstall di dashboard. `VERSION` = 1.5.2, `CHANGELOG` heading
       `## 1.5.2 (2026-10-27)`, commit + tag `v1.5.2` + push.
 - [x] **Tombol Uninstall di dashboard**: kartu **Uninstall** di grup SISTEM, konfirmasi
