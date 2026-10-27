@@ -4,6 +4,14 @@ Semua perubahan penting proyek ini didokumentasikan di sini.
 Versi mengikuti `MAJOR.MINOR.PATCH`, dan **setiap rilis diberi tag `v<versi>`** di GitHub
 (tag inilah yang dipakai installer & tombol Update — bukan branch `main`).
 
+## 1.5.2 (2026-10-27)
+- **Tombol Uninstall di dashboard**: kartu **Uninstall** (grup SISTEM) menghapus add-on tanpa SSH —
+  konfirmasi wajib mengetik `HAPUS`, progres live, lalu halaman dialihkan ke LuCI. `POST /uninstall`
+  (wajib POST+token) mengunduh `uninstall.sh` dari rilis terbaru lalu menjalankannya **detached** dengan
+  jeda 1 detik, jadi respons terkirim sebelum file add-on hilang. Endpoint baru `GET /uninstalllog`
+  memantau kemajuan; **404** dari endpoint itu dipakai dashboard sebagai tanda penghapusan sukses.
+  Update & uninstall saling menolak (409) bila salah satunya sedang berjalan.
+
 ## 1.5.1 (2026-10-27)
 - **Satu kartu untuk dua LED**: **LED LAN** dan **LED Power** digabung jadi kartu **Mode LED** dengan dua
   baris (LAN & Power). Grup **PENGATURAN** kini **3 kartu**: Mode LED, Ping Target, Interval Cek.

@@ -4,9 +4,19 @@ Ringkas — update tiap akhir sesi.
 
 **Tanggal terakhir diperbarui:** 2026-10-27
 **Fase:** Maintenance / fitur (setelah Development + Deployment)
-**Versi:** 1.5.1
+**Versi:** 1.5.2
 
 ## Sedang dikerjakan (sesi ini)
+- [x] **Rilis v1.5.2** — tombol Uninstall di dashboard. `VERSION` = 1.5.2, `CHANGELOG` heading
+      `## 1.5.2 (2026-10-27)`, commit + tag `v1.5.2` + push.
+- [x] **Tombol Uninstall di dashboard**: kartu **Uninstall** di grup SISTEM, konfirmasi
+      ketik `HAPUS`, endpoint **`POST /uninstall`** (POST+token, 409 bila update/uninstall lain jalan,
+      502 bila unduhan gagal) + **`GET /uninstalllog`**. Uninstaller dijalankan **detached** dengan jeda
+      1 detik supaya respons JSON terkirim sebelum file add-on hilang; dashboard memantau sampai
+      endpoint hilang (404) lalu redirect ke LuCI. `uninstall.sh` diunduh dari ref rilis terbaru
+      (fallback `main`). Verifikasi `luac -p` / `node --check` / `sh -n` lolos + preview headless.
+- [x] Docs: `docs/api.md` (endpoint + catatan keamanan), `README.md` (cara uninstall dari dashboard),
+      `CHANGELOG.md` (bagian "Belum dirilis").
 - [x] **Rilis v1.5.1** — penggabungan kartu Mode LED, tombol Service berwarna, konfirmasi hapus target.
       `VERSION` = 1.5.1, `CHANGELOG` heading `## 1.5.1 (2026-10-27)`, commit + tag `v1.5.1`.
 - [x] **Kartu LED LAN + Power digabung** jadi satu kartu **Mode LED** (dua baris: LAN & Power) → grup

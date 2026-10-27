@@ -228,10 +228,66 @@ Cara membaca keadaan:
 
 ---
 
+## `POST /uninstall` — **POST+token**
+
+Hapus add-on dari STB (setara menjalankan `uninstall.sh` lewat SSH), dipicu tombol
+**Hapus HG680PCLS** di kartu **Uninstall** (grup SISTEM). Konfirmasi berlapis di dashboard:
+`prompt` yang mewajibkan mengetik **HAPUS**.
+
+1. Tolak (409) bila masih ada `update` atau `uninstall` lain yang berjalan.
+2. Resolve ref = tag `v<versi>` tertinggi (`remote_version()`), fallback `main`.
+3. Unduh `uninstall.sh` dari ref tersebut ke `/tmp/hg680pcls-uninstall.sh` — bila gagal, **belum ada
+   file yang dihapus** (502).
+4. Lepas ke latar belakang dengan jeda 1 detik (agar respons ini terkirim sebelum file add-on hilang).
+   Wrapper menulis PID, menjalankan uninstaller, lalu menulis exit code.
+
+Yang dihapus `uninstall.sh`: `/etc/config/hg680pcls`, `/etc/init.d/hg680pcls`, `/usr/bin/hg680pcl`,
+controller, folder view, sisa CBI lama, `/tmp/hg680p_led`. **Backup** `/etc/config/hg680pcls.bak`
+sengaja dipertahankan. LED di-reset dan service dihentikan lebih dulu.
+
+**Body:** `token=<csrf token>`
+
+**Response 200** (cepat — uninstaller baru dilepas)
+
+```json
+{ "ok": true, "started": true, "ref": "v1.5.2" }
+```
+
+**Response 409 / 502**
+
+```json
+{ "ok": false, "error": "penghapusan sedang berjalan" }
+{ "ok": false, "error": "gagal mengunduh uninstaller dari GitHub" }
+```
+
+**Response 403 / 405** — sama seperti `/save`.
+
+---
+
+## `GET /uninstalllog`
+
+Kemajuan penghapusan, dipantau dashboard tiap ~1 detik. **Setelah sukses endpoint ini ikut hilang**
+(controller + `/etc/config/hg680pcls` terhapus), jadi dashboard menganggap **HTTP 404 sebagai tanda
+berhasil** dan mengalihkan ke halaman utama LuCI.
+
+```json
+{ "ok": true, "running": true, "done": false, "code": null, "log": "[HG680PCLS] Removing installation...\n" }
+```
+
+| Field | Keterangan |
+|---|---|
+| `running` | `true` bila proses uninstaller (PID di `/tmp/hg680pcls-uninstall.pid`) masih hidup |
+| `done` | `true` bila exit code sudah ditulis (`/tmp/hg680pcls-uninstall.rc`) |
+| `code` | exit code uninstaller (`0` sukses) |
+| `log` | 2000 karakter terakhir `/tmp/hg680pcls-uninstall.log` |
+
+---
+
 ## Keamanan (ringkas)
-- `save` & `update` = **POST + token CSRF** (dua lapis: dispatcher LuCI + `require_post()`).
+- `save`, `update`, & `uninstall` = **POST + token CSRF** (dua lapis: dispatcher LuCI + `require_post()`).
 - `service` (`action=on|off`) = **POST + token CSRF**, memakai helper yang sama.
-- `status`, `check`, & `updatelog` = GET, read-only.
-- `/update` menjalankan installer sebagai **root** (detached) — hanya bisa dipicu dari sesi admin LuCI
-  yang login (token CSRF + ACL `luci`), dan maksimal satu pemasangan pada satu waktu.
-- `/updatelog` hanya membaca berkas log/PID/exit-code di `/tmp` — tidak menerima input apa pun.
+- `status`, `check`, `updatelog`, & `uninstalllog` = GET, read-only.
+- `/update` & `/uninstall` menjalankan skrip dari GitHub sebagai **root** (detached) — hanya bisa dipicu
+  dari sesi admin LuCI yang login (token CSRF + ACL `luci`), satu proses pada satu waktu, dan hanya
+  satu dari keduanya (update menolak saat uninstall berjalan, begitu pula sebaliknya).
+- `/updatelog` & `/uninstalllog` hanya membaca berkas log/PID/exit-code di `/tmp` — tidak menerima input.

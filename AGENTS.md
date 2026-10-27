@@ -58,8 +58,13 @@ docs/plan-ipk.md                          # rencana paket .ipk (direncanakan, be
   `awk '/^<script>/{f=1;next} /^<\/script>/{f=0} f' usr/lib/lua/luci/view/hg680pcls/dashboard.htm | sed 's/<%=[^%]*%>/TPL/g' > /tmp/d.js && node --check /tmp/d.js`
 
 ## Aturan keamanan (jangan dilanggar)
-- Endpoint POST (`save`, `update`) **wajib** lewat `post(...)` di routing + `require_post()` di action.
+- Endpoint POST (`save`, `update`, `uninstall`) **wajib** lewat `post(...)` di routing + `require_post()` di action.
 - `update` menjalankan installer resmi sebagai **root** — jangan tambahkan endpoint semacam ini tanpa cek POST+token.
+- `uninstall` menghapus file add-on + `/etc/config/hg680pcls` sebagai **root** dari dashboard. Aturannya:
+  wajib POST+token, tolak (409) bila `update`/`uninstall` lain sedang jalan, unduh `uninstall.sh` dulu
+  (gagal unduh = 502, tidak ada file yang dihapus), jalankan **detached** dengan jeda 1 detik agar respons
+  terkirim sebelum file hilang, dan minta konfirmasi ketik `HAPUS` di UI. Jangan pernah menambah varian
+  GET atau tombol satu-klik tanpa konfirmasi.
 - Input `ping_targets` **wajib** lewat `valid_targets()` (maks 8, pola hostname/IP) karena nilainya masuk ke
   loop shell di `init.d`.
 - Jangan pernah menaruh token/secret di repo.
