@@ -2,11 +2,26 @@
 
 Ringkas — update tiap akhir sesi.
 
-**Tanggal terakhir diperbarui:** 2026-10-18
+**Tanggal terakhir diperbarui:** 2026-10-27
 **Fase:** Maintenance / fitur (setelah Development + Deployment)
-**Versi:** 1.5.0
+**Versi:** 1.5.1
 
 ## Sedang dikerjakan (sesi ini)
+- [x] **Rilis v1.5.1** — penggabungan kartu Mode LED, tombol Service berwarna, konfirmasi hapus target.
+      `VERSION` = 1.5.1, `CHANGELOG` heading `## 1.5.1 (2026-10-27)`, commit + tag `v1.5.1`.
+- [x] **Kartu LED LAN + Power digabung** jadi satu kartu **Mode LED** (dua baris: LAN & Power) → grup
+      **PENGATURAN** kini **3 kartu**: Mode LED, Ping Target, Interval Cek. Indikator diperkecil
+      (LED 16px → 12px, padding tombol mode 14px → 9px, radius 12px → 10px); ≤330px tetap 2 kolom.
+      Preview headless (1280/380/320px) sudah dicek: 4 tombol sejajar tidak pecah teks.
+- [x] **Tombol kartu Service diberi warna**: **Aktifkan** hijau solid (`#15803d`, hover `#166534`),
+      **Nonaktifkan** merah outline (`#b91c1c`, hover jadi solid + teks putih), state `disabled`
+      (saat memasang update) abu-abu netral dengan kursor `not-allowed`. Ditambah `title` penjelas efek
+      tiap aksi. Kontras teks lolos AA (≥4.5:1). Verifikasi `node --check` lolos.
+- [x] **Konfirmasi hapus target aktif**: klik chip di kartu **Ping Target** kini memunculkan `confirm()`
+      ("Hapus target <host> dari daftar?" + pengingat berlaku setelah Simpan). Verifikasi `node --check` /
+      `sh -n` / `luac -p` lolos. Masuk rilis 1.5.1.
+- [x] Catatan tata letak disamakan: `CHANGELOG.md` (1.5.0 menyebut **4 kartu** di PENGATURAN; entri
+      1.4.2 diberi keterangan "5 kartu waktu itu, jadi 4 sejak 1.5.0") dan `PROGRESS.md` (rilis 1.4.2).
 - [x] **Rilis v1.5.0** — dashboard hanya mengontrol **LED LAN** dan **LED Power**.
 - [x] Kode: kartu mode ketiga dihapus dari view; controller hanya memvalidasi/menyimpan
       `power_mode` + `lan_mode`; `/status` tidak lagi mengirim field mode ketiga; skrip
@@ -16,15 +31,15 @@ Ringkas — update tiap akhir sesi.
       `CHANGELOG.md` (entri 1.3.0/1.4.0 dirapikan, heading 1.5.0), `docs/api.md`,
       `docs/troubleshooting.md`, `AGENTS.md`, `docs/plan-ipk.md`.
 - [x] Verifikasi: `luac -p`, `sh -n`, `node --check` semua lolos; `VERSION` 1.5.0; `CHANGELOG` heading 1.5.0.
-- [ ] Commit + push + tag **v1.5.0** (tunggu izin user).
+- [x] Commit + push + tag **v1.5.0** (sudah di origin).
 - [ ] Uji di STB: pastikan hanya dua kartu mode yang tampil, Simpan mengubah pola LED LAN/Power,
       dan service lama (yang masih menyimpan pin ketiga di UCI) tetap jalan normal — setelan lama
       diabaikan tanpa error.
 
 ## Rilis 1.4.2 (detail)
-- [x] **Tata letak halaman dibagi dua grup**: **PENGATURAN** (5 kartu + tombol *Simpan & Restart Service*
-      di dalam grup) dan **SISTEM** (**Service** lalu **Update**) — dengan catatan kecil
-      "berlaku setelah Simpan" / "langsung berlaku".
+- [x] **Tata letak halaman dibagi dua grup**: **PENGATURAN** (5 kartu waktu itu + tombol *Simpan & Restart
+      Service* di dalam grup; **jadi 4 kartu sejak 1.5.0**) dan **SISTEM** (**Service** lalu **Update**)
+      — dengan catatan kecil "berlaku setelah Simpan" / "langsung berlaku".
 - [x] Baris kartu Service: urutan **[tombol] [pill Service] [pill Internet]**, semuanya rapat kiri
       (`margin-left:auto` dihapus).
 - [x] Kartu Update: panel **catatan rilis + log install** berdampingan (2 kolom, tinggi tetap + scroll),

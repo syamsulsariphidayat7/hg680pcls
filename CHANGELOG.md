@@ -4,16 +4,29 @@ Semua perubahan penting proyek ini didokumentasikan di sini.
 Versi mengikuti `MAJOR.MINOR.PATCH`, dan **setiap rilis diberi tag `v<versi>`** di GitHub
 (tag inilah yang dipakai installer & tombol Update — bukan branch `main`).
 
+## 1.5.1 (2026-10-27)
+- **Satu kartu untuk dua LED**: **LED LAN** dan **LED Power** digabung jadi kartu **Mode LED** dengan dua
+  baris (LAN & Power). Grup **PENGATURAN** kini **3 kartu**: Mode LED, Ping Target, Interval Cek.
+- **Indikator lebih ringkas**: titik LED 16px → **12px**, padding tombol mode dirapatkan (14px → 9px),
+  radius 12px → 10px. Di layar ≤330px tombol mode turun jadi 2 kolom; di atas itu tetap 4 sejajar.
+- **Tombol kartu Service diberi warna**: **Aktifkan** hijau solid, **Nonaktifkan** merah outline
+  (hover jadi solid), state `disabled` saat memasang update tampil abu-abu netral.
+- **Konfirmasi hapus target**: klik chip di kartu **Ping Target** kini memunculkan dialog konfirmasi
+  (nama target + pengingat bahwa perubahan berlaku setelah Simpan).
+
 ## 1.5.0 (2026-10-18)
-- Dashboard hanya mengontrol **LED LAN** dan **LED Power** (dua kartu mode).
+- Dashboard hanya mengontrol **LED LAN** dan **LED Power** (dua kartu mode); kartu mode ketiga dihapus.
+- Grup **PENGATURAN** kini berisi **4 kartu**: **LED LAN**, **LED Power**, **Ping Target**, dan
+  **Interval Cek** (turun dari 5 kartu karena kartu mode ketiga dihapus).
 
 ## 1.4.3 (2026-10-18)
 - Kartu **Ping Target**: keterangan **"Pisahkan dengan spasi · maksimal 8 target"** di bawah kolom input,
   supaya jelas cara menulis lebih dari satu target (batas 8 target tidak berubah).
 
 ## 1.4.2 (2026-10-18)
-- **Halaman dibagi dua grup**: **PENGATURAN** (5 kartu mode/target/interval + tombol *Simpan & Restart
-  Service* yang kini berada di dalam grup ini) dan **SISTEM** (kartu **Service** lalu **Update**) —
+- **Halaman dibagi dua grup**: **PENGATURAN** (5 kartu mode/target/interval waktu itu + tombol *Simpan &
+  Restart Service* yang kini berada di dalam grup ini; **jadi 4 kartu sejak v1.5.0**) dan **SISTEM**
+  (kartu **Service** lalu **Update**) —
   jelas mana yang baru berlaku setelah Simpan dan mana yang langsung berlaku.
 - **Baris kartu Service dirapikan**: urutannya sekarang **[Nonaktifkan/Aktifkan] [Service aktif]
   [Internet ONLINE]**, semuanya rapat kiri (sebelumnya tombol didorong ke kanan).
