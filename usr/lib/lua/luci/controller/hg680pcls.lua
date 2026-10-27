@@ -19,6 +19,11 @@ function index()
     -- GET read-only: dipantau dashboard selama pemasangan update berjalan.
     entry({"admin", "services", "hg680pcls", "updatelog"},
         call("action_updatelog")).leaf = true
+    -- Uninstall: wajib POST + token, sama seperti update.
+    entry({"admin", "services", "hg680pcls", "uninstall"},
+        post("action_uninstall")).leaf = true
+    entry({"admin", "services", "hg680pcls", "uninstalllog"},
+        call("action_uninstalllog")).leaf = true
 end
 
 local MODES = { offline = true, online = true, heart = true, disko = true }
@@ -360,6 +365,24 @@ local function detach_prefix()
     return ""
 end
 
+-- ===================== Uninstall: state & helper =====================
+
+-- Sama seperti update: proses dijalankan detached supaya request LuCI tidak
+-- menggantung, dan hilangnya file add-on tidak memutus respons yang sedang ditulis.
+local UNINSTALL_LOG    = "/tmp/hg680pcls-uninstall.log"
+local UNINSTALL_RC     = "/tmp/hg680pcls-uninstall.rc"
+local UNINSTALL_PID    = "/tmp/hg680pcls-uninstall.pid"
+local UNINSTALL_SCRIPT = "/tmp/hg680pcls-uninstall.sh"
+
+local function uninstaller_running()
+    if read_trim(UNINSTALL_RC) then return false end
+    local pid = read_trim(UNINSTALL_PID)
+    if pid and pid:match("^%d+$") and nixio.fs.access("/proc/" .. pid) then
+        return true
+    end
+    return false
+end
+
 function action_check()
     local lv = local_version()
     local rv, ref = remote_version()
@@ -390,6 +413,9 @@ function action_update()
     -- Satu pemasangan pada satu waktu.
     if installer_running() then
         return conflict("instalasi sedang berjalan")
+    end
+    if uninstaller_running() then
+        return conflict("penghapusan sedang berjalan")
     end
 
     -- Ambil installer dari ref rilis terbaru (fallback: main) supaya isi
@@ -430,5 +456,84 @@ function action_updatelog()
         code      = code,
         ["local"] = local_version(),
         log       = read_tail(UPDATE_LOG, 4000),
+    }))
+end
+
+-- ===================== Uninstall: endpoint =====================
+
+-- POST /uninstall — hapus add-on (file aplikasi + /etc/config/hg680pcls).
+-- Backup /etc/config/hg680pcls.bak tetap disimpan oleh uninstall.sh.
+function action_uninstall()
+    if not require_post() then
+        return
+    end
+
+    local http = luci.http
+    http.prepare_content("application/json")
+
+    local function fail(code, msg)
+        http.status(code, code == 409 and "Conflict" or nil)
+        http.write(luci.jsonc.stringify({ ok = false, error = msg }))
+    end
+
+    if installer_running() then
+        return fail(409, "update sedang berjalan")
+    end
+    if uninstaller_running() then
+        return fail(409, "penghapusan sedang berjalan")
+    end
+
+    -- Ref rilis terbaru (fallback main), sama seperti installer.
+    local _, ref = remote_version()
+    if not ref or ref == "" then ref = "main" end
+
+    -- Bersihkan sisa percobaan sebelumnya; rc lama akan membuat pemantauan
+    -- menganggap penghapusan baru sudah selesai.
+    luci.sys.call(string.format("rm -f %s %s %s %s",
+        UNINSTALL_LOG, UNINSTALL_RC, UNINSTALL_PID, UNINSTALL_SCRIPT))
+
+    -- Unduh uninstaller dulu (foreground). Kalau gagal, belum ada file yang dihapus.
+    local dl = luci.sys.call(string.format(
+        "curl -fsSL --connect-timeout 10 --max-time 60 %s/%s/uninstall.sh -o %s 2>/dev/null",
+        REPO_RAW, ref, UNINSTALL_SCRIPT))
+    if dl ~= 0 or not nixio.fs.access(UNINSTALL_SCRIPT) then
+        return fail(502, "gagal mengunduh uninstaller dari GitHub")
+    end
+
+    -- Wrapper: tulis PID sendiri, beri jeda 1 detik supaya respons JSON ini
+    -- terkirim lebih dulu, baru jalankan uninstaller & simpan exit code.
+    local wrapper = string.format([[
+echo $$ > %s
+sleep 1
+sh %s
+echo $? > %s
+rm -f %s]],
+        UNINSTALL_PID, UNINSTALL_SCRIPT, UNINSTALL_RC, UNINSTALL_PID)
+
+    luci.sys.call(string.format("%ssh -c %s </dev/null >%s 2>&1 &",
+        detach_prefix(), luci.util.shellquote(wrapper), UNINSTALL_LOG))
+
+    http.write(luci.jsonc.stringify({
+        ok      = true,
+        started = true,
+        ref     = ref,
+    }))
+end
+
+-- GET /uninstalllog — dipantau dashboard sampai endpoint ini hilang (404),
+-- yang berarti controller & config sudah benar-benar terhapus.
+function action_uninstalllog()
+    local rc = read_trim(UNINSTALL_RC)
+    local code
+    if rc and rc:match("^%d+$") then
+        code = tonumber(rc)
+    end
+    luci.http.prepare_content("application/json")
+    luci.http.write(luci.jsonc.stringify({
+        ok      = true,
+        running = uninstaller_running(),
+        done    = rc ~= nil,
+        code    = code,
+        log     = read_tail(UNINSTALL_LOG, 2000),
     }))
 end

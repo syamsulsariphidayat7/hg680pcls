@@ -68,6 +68,13 @@
 .hg-svcrow .hg-btn-off:hover{background:#b91c1c;border-color:#b91c1c;color:#fff}
 .hg-svcrow .cbi-button[disabled]{background:var(--hg-bg);border-color:var(--hg-border);color:var(--hg-muted);opacity:.7;cursor:not-allowed}
 .hg-upd-note{font-size:12px;color:var(--hg-muted)}
+.hg-card-danger{border-color:#fecaca}
+.hg-card-danger h2{color:#b91c1c}
+.hg-uninst{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.hg-card-danger .hg-btn-danger{background:#b91c1c;border:1px solid #b91c1c;color:#fff;font-weight:600;min-width:180px;transition:background .15s,border-color .15s,color .15s}
+.hg-card-danger .hg-btn-danger:hover{background:#991b1b;border-color:#991b1b;color:#fff}
+.hg-card-danger .hg-btn-danger[disabled]{background:var(--hg-bg);border-color:var(--hg-border);color:var(--hg-muted);opacity:.7;cursor:not-allowed}
+.hg-card-danger code{background:var(--hg-bg);border-radius:4px;padding:1px 4px;font-size:11.5px}
 .hg-upd-btns{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
 .hg-upd-btns a.cbi-button{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;line-height:1.2}
 .hg-hide{display:none!important}
@@ -91,7 +98,7 @@
 .hg-ticks span:hover{background:var(--hg-bg);color:var(--hg-text)}
 .hg-ticks span.on{background:var(--hg-bg);color:var(--hg-text);font-weight:700}
 .hg-log{margin:14px 0 0;background:#0f1720;color:#c9d6e4;border-radius:10px;padding:12px 14px;font-size:11.5px;line-height:1.5;max-height:230px;overflow:auto;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,Menlo,monospace}
-@media(max-width:640px){.hg-panes{grid-template-columns:1fr}.hg-savebar .cbi-button{min-width:0;width:100%}}
+@media(max-width:640px){.hg-panes{grid-template-columns:1fr}.hg-savebar .cbi-button{min-width:0;width:100%}.hg-card-danger .hg-btn-danger{width:100%}}
 @media(max-width:330px){.hg-modes{grid-template-columns:repeat(2,1fr)}}
 </style>
 
@@ -194,6 +201,18 @@
       <div class="hg-hint hg-hide hg-reload" id="reloadHint"></div>
       <p class="hg-hint">Syamsul Sarip Hidayat &middot; Boundless</p>
     </section>
+
+    <section class="hg-card hg-card-danger">
+      <h2>Uninstall</h2>
+      <div class="hg-uninst">
+        <button class="cbi-button hg-btn-danger" id="uninstBtn" type="button">Hapus HG680PCLS</button>
+        <span class="hg-upd-note" id="uninstNote">service berhenti, file aplikasi &amp; setelan dihapus</span>
+      </div>
+      <p class="hg-hint">Backup config (<code>/etc/config/hg680pcls.bak</code>) tetap disimpan.
+        Halaman ini akan hilang setelah add-on dihapus.</p>
+      <div class="hg-warn hg-hide" id="uninstWarn">Menghapus &mdash; jangan tutup halaman ini sampai selesai.</div>
+      <pre class="hg-log hg-hide" id="uninstLog"></pre>
+    </section>
   </div>
 
   <div class="hg-toast" id="toast"></div>
@@ -209,6 +228,9 @@ var CHECK_URL  = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls",
 var SERVICE_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "service")%>";
 var UPDATE_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "update")%>";
 var UPDATELOG_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "updatelog")%>";
+var UNINSTALL_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "uninstall")%>";
+var UNINSTALLLOG_URL = "<%=luci.dispatcher.build_url("admin", "services", "hg680pcls", "uninstalllog")%>";
+var ADMIN_URL = "<%=luci.dispatcher.build_url("admin")%>";
 
 var state = { power: "online", lan: "heart", targets: "", interval: 5 };
 var firstLoad = true;
@@ -311,6 +333,28 @@ function apiUpdateLog(){
     return Promise.resolve(m || { running: false, done: false, log: "" });
   }
   return apiFetch(UPDATELOG_URL, { credentials: "same-origin" });
+}
+
+function apiUninstall(){
+  if (window.HG_MOCK) {
+    return Promise.resolve(window.HG_MOCK.uninstall || { ok: true, started: true, ref: "dev" });
+  }
+  var body = "token=" + encodeURIComponent(CSRF_TOKEN);
+  return apiFetch(UNINSTALL_URL, {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: body
+  });
+}
+
+function apiUninstallLog(){
+  if (window.HG_MOCK) {
+    var m = window.HG_MOCK.uninstalllog;
+    if (typeof m === "function") { return Promise.resolve(m()); }
+    return Promise.resolve(m || { running: false, done: false, log: "" });
+  }
+  return apiFetch(UNINSTALLLOG_URL, { credentials: "same-origin" });
 }
 
 function toast(msg, cls){
@@ -608,7 +652,7 @@ function logLine(text, reset){
 // ===== UI saat pemasangan =====
 
 function busyButtons(on){
-  ["checkBtn", "updateBtn", "reinstallBtn", "saveBtn", "svcBtn"].forEach(function(id){
+  ["checkBtn", "updateBtn", "reinstallBtn", "saveBtn", "svcBtn", "uninstBtn"].forEach(function(id){
     var el = $(id);
     if (el) el.disabled = !!on;
   });
@@ -766,9 +810,91 @@ $("reinstallBtn").addEventListener("click", function(){
   runUpdate($("reinstallBtn"), "Pasang ulang", true);
 });
 
+// ===== Uninstall =====
+
+var uninstalling = false;
+var uninstTimer = null;
+var UNINSTALL_MAX_MS = 90000;
+
+function uninstUi(on){
+  var btn = $("uninstBtn");
+  btn.disabled = !!on;
+  btn.textContent = on ? "Menghapus…" : "Hapus HG680PCLS";
+  $("uninstWarn").classList.toggle("hg-hide", !on);
+  $("uninstNote").textContent = on
+    ? "menghapus add-on dari STB…"
+    : "service berhenti, file aplikasi & setelan dihapus";
+}
+
+function uninstFinish(ok, msg){
+  uninstalling = false;
+  if (uninstTimer) { clearTimeout(uninstTimer); uninstTimer = null; }
+  if (ok) {
+    $("uninstNote").textContent = "selesai — mengalihkan ke LuCI…";
+    toast("HG680PCLS dihapus. Mengalihkan ke LuCI…", "ok");
+    setTimeout(function(){ window.location.href = ADMIN_URL; }, 2200);
+    return;
+  }
+  uninstUi(false);
+  busyButtons(false);
+  toast("Gagal: " + msg, "err");
+}
+
+function uninstPoll(deadline){
+  apiUninstallLog().then(function(d){
+    var el = $("uninstLog");
+    if (d && d.log) {
+      el.classList.remove("hg-hide");
+      if (el.textContent !== d.log) el.textContent = d.log;
+      el.scrollTop = el.scrollHeight;
+    }
+    if (d && d.done) {
+      uninstFinish(d.code === 0, d.code === 0 ? "" : "kode " + d.code + " — lihat log");
+      return;
+    }
+    if (Date.now() > deadline) {
+      uninstFinish(false, "terlalu lama — cek log di STB");
+      return;
+    }
+    uninstTimer = setTimeout(function(){ uninstPoll(deadline); }, 1000);
+  }).catch(function(e){
+    // 404 = controller & config sudah terhapus → penghapusan berhasil.
+    if (e && e.status === 404) { uninstFinish(true); return; }
+    if (Date.now() > deadline) {
+      uninstFinish(false, "terlalu lama — cek log di STB");
+      return;
+    }
+    uninstTimer = setTimeout(function(){ uninstPoll(deadline); }, 1500);
+  });
+}
+
+$("uninstBtn").addEventListener("click", function(){
+  if (uninstalling) return;
+  var typed = window.prompt("Hapus HG680PCLS dari STB?\n\n"
+    + "Service berhenti, file aplikasi dan setelan dihapus (backup /etc/config/hg680pcls.bak tetap disimpan). "
+    + "Halaman ini akan hilang setelahnya.\n\nKetik HAPUS untuk melanjutkan.");
+  if (typed === null) return;
+  if (typed.replace(/\s+/g, "").toUpperCase() !== "HAPUS") {
+    toast("Dibatalkan — ketikan tidak cocok dengan HAPUS.", "err");
+    return;
+  }
+
+  uninstalling = true;
+  $("uninstLog").textContent = "";
+  $("uninstLog").classList.add("hg-hide");
+  busyButtons(true);
+  uninstUi(true);
+  apiUninstall().then(function(r){
+    if (!r || !r.ok) throw new Error((r && r.error) || "Gagal memulai penghapusan");
+    uninstPoll(Date.now() + UNINSTALL_MAX_MS);
+  }).catch(function(e){
+    uninstFinish(false, e && e.message ? e.message : "Gagal menghubungi STB.");
+  });
+});
+
 refresh();
 resumeInstall();
-setInterval(function(){ if (!document.hidden && !installing) refresh(); }, 5000);
+setInterval(function(){ if (!document.hidden && !installing && !uninstalling) refresh(); }, 5000);
 })();
 </script>
 <%+footer%>
